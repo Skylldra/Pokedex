@@ -1,55 +1,13 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dein Pokédex</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f8f8f8;
-        }
-        h1 {
-            color: #333;
-        }
-        .pokemon {
-            display: inline-block;
-            text-align: center;
-            margin: 10px;
-        }
-        .caught {
-            filter: none;
-        }
-        .not-caught {
-            filter: grayscale(100%);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pokedex</title>
 </head>
 <body>
-    <h1>Dein Pokédex</h1>
-    <div id="pokedex"></div>
-
-    <script>
-        // Dynamische Daten aus der URL abrufen
-        const params = new URLSearchParams(window.location.search);
-        const username = params.get('user');
-
-        // Daten vom Server laden
-        fetch(`/api/pokedex?user=${username}`)
-            .then(response => response.json())
-            .then(data => {
-                const container = document.getElementById('pokedex');
-                data.forEach(pokemon => {
-                    const div = document.createElement('div');
-                    div.className = `pokemon ${pokemon.caught ? 'caught' : 'not-caught'}`;
-                    div.innerHTML = `
-                        <img src="/sprites/${pokemon.pokemon_id}.png" alt="${pokemon.name}" />
-                        <p>${pokemon.name}</p>
-                    `;
-                    container.appendChild(div);
-                });
-            });
-    </script>
+  <h1>Willkommen zum Pokémon-Pokédex!</h1>
+  <p>Gib deinen Twitch-Benutzernamen in die URL ein, um deinen Pokédex zu sehen. Beispiel:</p>
+  <p><code>https://pokemoncatch.onrender.com/DEIN_USERNAME</code></p>
 </body>
 </html>

@@ -11,24 +11,29 @@ if (!fs.existsSync(userDir)) {
   fs.mkdirSync(userDir); // Ordner erstellen, falls nicht vorhanden
 }
 
-// Pokémon-Daten (151 Pokémon ohne Pokédex-Einträge)
+// Pokémon-Daten laden
 const pokemonData = JSON.parse(fs.readFileSync(path.join(__dirname, "pokedex.json"), "utf-8"));
 
-// Statische Dateien (z.B. index.html)
-app.use(express.static("public"));
+// Route: Neues Pokémon fangen
+app.get("/catch", (req, res) => {
+  const username = req.query.username;
+  const pokemonId = parseInt(req.query.pokemonId);
 
-// Route für Benutzer-Pokédex
-app.get("/:username", (req, res) => {
-  const username = req.params.username.toLowerCase();
-  const userFile = path.join(userDir, `${username}.csv`);
+  if (!username || isNaN(pokemonId)) {
+    return res.status(400).send("Ungültige Anfrage: Nutzername oder Pokémon-ID fehlt.");
+  }
 
-  // Prüfen, ob die Benutzerdatei existiert
+  const shiny = Math.random() < 0.1; // 10% Chance für ein Shiny-Pokémon
+  const caughtAt = new Date().toISOString();
+
+  const userFile = path.join(userDir, `${username.toLowerCase()}.csv`);
+
+  // Prüfen, ob die Benutzerdatei existiert, wenn nicht, erstellen
   if (!fs.existsSync(userFile)) {
-    // Benutzerdatei erstellen, wenn sie nicht existiert
     fs.writeFileSync(userFile, "PokemonID,Shiny,CaughtAt\n");
   }
 
-  // Daten des Benutzers lesen
+  // Prüfen, ob das Pokémon bereits gefangen wurde
   const userData = fs.readFileSync(userFile, "utf-8")
     .split("\n")
     .slice(1)
@@ -38,7 +43,41 @@ app.get("/:username", (req, res) => {
       return { id: parseInt(id), shiny: shiny === "true", date };
     });
 
-  // HTML für den Pokédex generieren
+  const alreadyCaught = userData.find((p) => p.id === pokemonId);
+
+  if (alreadyCaught) {
+    return res.send(`${username} hat Pokémon Nr. ${pokemonId} bereits gefangen.`);
+  }
+
+  // Pokémon hinzufügen
+  const newLine = `${pokemonId},${shiny},${caughtAt}\n`;
+  fs.appendFileSync(userFile, newLine);
+
+  const pokemonName = pokemonData.find((p) => p.id === pokemonId)?.name || "Unbekanntes Pokémon";
+  res.send(`${username} hat ${pokemonName} (${pokemonId}) gefangen! ${shiny ? "✨ Shiny! ✨" : ""}`);
+});
+
+// Route für den Benutzer-Pokédex
+app.get("/:username", (req, res) => {
+  const username = req.params.username.toLowerCase();
+  const userFile = path.join(userDir, `${username}.csv`);
+
+  // Prüfen, ob die Benutzerdatei existiert
+  if (!fs.existsSync(userFile)) {
+    return res.send(`<h1>Der Benutzer ${username} hat noch keinen Pokédex.</h1>`);
+  }
+
+  // Daten des Benutzers laden
+  const userData = fs.readFileSync(userFile, "utf-8")
+    .split("\n")
+    .slice(1)
+    .filter((line) => line.trim() !== "")
+    .map((line) => {
+      const [id, shiny, date] = line.split(",");
+      return { id: parseInt(id), shiny: shiny === "true", date };
+    });
+
+  // Pokédex generieren
   let pokedexHTML = `
     <h1>Pokedex von ${username}</h1>
     <table border='1'>
@@ -46,7 +85,7 @@ app.get("/:username", (req, res) => {
         <th>#</th>
         <th>Name</th>
         <th>Shiny</th>
-        <th>Pokedex-Eintrag</th>
+        <th>Gefangen am</th>
       </tr>
   `;
 
@@ -54,14 +93,14 @@ app.get("/:username", (req, res) => {
     const userPokemon = userData.find((p) => p.id === pokemon.id);
     const name = userPokemon ? pokemon.name : "????????";
     const shiny = userPokemon && userPokemon.shiny ? "Ja" : "Nein";
-    const entry = userPokemon ? pokemon.entry : "";
+    const date = userPokemon ? userPokemon.date : "-";
 
     pokedexHTML += `
       <tr>
         <td>${pokemon.id}</td>
         <td>${name}</td>
         <td>${shiny}</td>
-        <td>${entry}</td>
+        <td>${date}</td>
       </tr>
     `;
   });

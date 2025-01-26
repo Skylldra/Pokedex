@@ -14,6 +14,15 @@ if (!fs.existsSync(userDir)) {
 // Pokémon-Daten laden
 const pokemonData = JSON.parse(fs.readFileSync(path.join(__dirname, "pokedex.json"), "utf-8"));
 
+// Route: Root-Route für die Übersicht
+app.get("/", (req, res) => {
+  res.send(`
+    <h1>Willkommen beim Pokémon Pokédex!</h1>
+    <p>Um deinen Pokédex zu sehen, besuche: <code>https://pokedex-dt48.onrender.com/&lt;username&gt;</code></p>
+    <p>Um ein Pokémon zu fangen, sende eine Anfrage an: <code>/catch</code></p>
+  `);
+});
+
 // Route: Neues Pokémon fangen
 app.get("/catch", (req, res) => {
   const username = req.query.username;
@@ -57,7 +66,7 @@ app.get("/catch", (req, res) => {
   res.send(`${username} hat ${pokemonName} (${pokemonId}) gefangen! ${shiny ? "✨ Shiny! ✨" : ""}`);
 });
 
-// Route für den Benutzer-Pokédex
+// Route: Benutzer-Pokédex anzeigen
 app.get("/:username", (req, res) => {
   const username = req.params.username.toLowerCase();
   const userFile = path.join(userDir, `${username}.csv`);

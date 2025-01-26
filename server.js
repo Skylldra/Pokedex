@@ -5,6 +5,9 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Middleware für JSON-Parsing
+app.use(express.json());
+
 // Ordner für Benutzerdateien
 const userDir = path.join(__dirname, "user");
 if (!fs.existsSync(userDir)) {
@@ -23,21 +26,18 @@ app.get("/", (req, res) => {
   `);
 });
 
-// Route: Neues Pokémon fangen
-app.get("/catch", (req, res) => {
-  const username = req.query.username;
-  const pokemonId = parseInt(req.query.pokemonId);
+// Route: Neues Pokémon fangen (POST statt GET)
+app.post("/catch", (req, res) => {
+  const { username, pokemonId, caught, shiny } = req.body;
 
-  if (!username || isNaN(pokemonId)) {
-    return res.status(400).send("Ungültige Anfrage: Nutzername oder Pokémon-ID fehlt.");
+  if (!username || !pokemonId || typeof caught === "undefined" || typeof shiny === "undefined") {
+    return res.status(400).send("Ungültige Anfrage: Fehlende oder ungültige Daten.");
   }
 
-  const shiny = Math.random() < 0.1; // 10% Chance für ein Shiny-Pokémon
   const caughtAt = new Date().toISOString();
-
   const userFile = path.join(userDir, `${username.toLowerCase()}.csv`);
 
-  // Prüfen, ob die Benutzerdatei existiert, wenn nicht, erstellen
+  // Prüfen, ob die Benutzerdatei existiert, falls nicht, erstellen
   if (!fs.existsSync(userFile)) {
     fs.writeFileSync(userFile, "PokemonID,Shiny,CaughtAt\n");
   }
@@ -52,17 +52,17 @@ app.get("/catch", (req, res) => {
       return { id: parseInt(id), shiny: shiny === "true", date };
     });
 
-  const alreadyCaught = userData.find((p) => p.id === pokemonId);
+  const alreadyCaught = userData.find((p) => p.id === parseInt(pokemonId));
 
   if (alreadyCaught) {
     return res.send(`${username} hat Pokémon Nr. ${pokemonId} bereits gefangen.`);
   }
 
-  // Pokémon hinzufügen
+  // Neues Pokémon hinzufügen
   const newLine = `${pokemonId},${shiny},${caughtAt}\n`;
   fs.appendFileSync(userFile, newLine);
 
-  const pokemonName = pokemonData.find((p) => p.id === pokemonId)?.name || "Unbekanntes Pokémon";
+  const pokemonName = pokemonData.find((p) => p.id === parseInt(pokemonId))?.name || "Unbekanntes Pokémon";
   res.send(`${username} hat ${pokemonName} (${pokemonId}) gefangen! ${shiny ? "✨ Shiny! ✨" : ""}`);
 });
 

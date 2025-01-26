@@ -1,46 +1,72 @@
-const express = require('express');
-const mysql = require('mysql2');
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Verbindung zur Datenbank
-const db = mysql.createConnection({
-    host: 'localhost', // oder deine Render-DB-URL
-    user: 'root',
-    password: 'dein_passwort',
-    database: 'pokemon_catch'
-});
+// Ordner für Benutzerdateien
+const userDir = path.join(__dirname, "user");
+if (!fs.existsSync(userDir)) {
+  fs.mkdirSync(userDir); // Ordner erstellen, falls nicht vorhanden
+}
 
-// Middleware, um statische Dateien bereitzustellen (z. B. index.html)
-app.use(express.static(__dirname));
+// Pokémon-Daten (151 Pokémon mit Pokedex-Eintrag)
+const pokemonData = JSON.parse(fs.readFileSync(path.join(__dirname, "pokedex.json"), "utf-8"));
 
-// API-Endpunkt für Pokédex-Daten
-app.get('/api/pokedex', (req, res) => {
-    const user = req.query.user;
-    if (!user) {
-        return res.status(400).json({ error: 'Benutzername fehlt!' });
-    }
+// Statische Dateien (z.B. index.html)
+app.use(express.static("public"));
 
-    // Abfrage: Alle Pokémon für den Benutzer
-    const query = `
-        SELECT p.pokemon_id, p.name, 
-               COALESCE(c.is_shiny, FALSE) AS shiny, 
-               COALESCE(c.pokemon_id IS NOT NULL, FALSE) AS caught
-        FROM pokedex p
-        LEFT JOIN caught_pokemon c 
-        ON p.pokemon_id = c.pokemon_id AND c.user_id = ?
-    `;
+// Route für Benutzer-Pokédex
+app.get("/:username", (req, res) => {
+  const username = req.params.username.toLowerCase();
+  const userFile = path.join(userDir, `${username}.csv`);
 
-    db.query(query, [user], (err, results) => {
-        if (err) {
-            console.error(err);
-            return res.status(500).json({ error: 'Datenbankfehler!' });
-        }
-        res.json(results);
+  // Prüfen, ob die Benutzerdatei existiert
+  if (!fs.existsSync(userFile)) {
+    // Benutzerdatei erstellen, wenn sie nicht existiert
+    fs.writeFileSync(userFile, "PokemonID,Shiny,CaughtAt\n");
+  }
+
+  // Daten des Benutzers lesen
+  const userData = fs.readFileSync(userFile, "utf-8")
+    .split("\n")
+    .slice(1)
+    .filter((line) => line.trim() !== "")
+    .map((line) => {
+      const [id, shiny, date] = line.split(",");
+      return { id: parseInt(id), shiny: shiny === "true", date };
     });
+
+  // HTML für den Pokédex generieren
+  let pokedexHTML = "<h1>Pokedex</h1><table border='1'><tr><th>#</th><th>Name</th><th>Shiny</th><th>Pokedex-Eintrag</th></tr>";
+  pokemonData.forEach((pokemon) => {
+    const userPokemon = userData.find((p) => p.id === pokemon.id);
+    const name = userPokemon ? pokemon.name : "????????";
+    const shiny = userPokemon && userPokemon.shiny ? "Ja" : "Nein";
+    const entry = userPokemon ? pokemon.entry : "???";
+
+    pokedexHTML += `
+      <tr>
+        <td>${pokemon.id}</td>
+        <td>${name}</td>
+        <td>${shiny}</td>
+        <td>${entry}</td>
+      </tr>
+    `;
+  });
+  pokedexHTML += "</table>";
+
+  res.send(`
+    <html>
+      <head><title>Pokedex von ${username}</title></head>
+      <body>
+        <h1>Pokedex von ${username}</h1>
+        ${pokedexHTML}
+      </body>
+    </html>
+  `);
 });
 
 // Server starten
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server läuft auf Port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server läuft auf Port ${PORT}`));

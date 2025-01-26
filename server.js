@@ -26,20 +26,24 @@ app.get("/", (req, res) => {
   `);
 });
 
-// Route: Neues Pokémon fangen (POST statt GET)
+// Route: Neues Pokémon fangen (POST)
 app.post("/catch", (req, res) => {
-  const { username, pokemonId, caught, shiny } = req.body;
+  const { username, pokemonId } = req.body;
 
-  if (!username || !pokemonId || typeof caught === "undefined" || typeof shiny === "undefined") {
+  if (!username || !pokemonId) {
     return res.status(400).send("Ungültige Anfrage: Fehlende oder ungültige Daten.");
   }
 
+  // Zufällige Berechnung von shiny und caught
+  const shiny = Math.random() < 0.1; // 10% Chance für Shiny
+  const caught = Math.random() < 0.5; // 50% Chance, gefangen zu werden
   const caughtAt = new Date().toISOString();
+
   const userFile = path.join(userDir, `${username.toLowerCase()}.csv`);
 
   // Prüfen, ob die Benutzerdatei existiert, falls nicht, erstellen
   if (!fs.existsSync(userFile)) {
-    fs.writeFileSync(userFile, "PokemonID,Shiny,CaughtAt\n");
+    fs.writeFileSync(userFile, "PokemonID,Name,Shiny,CaughtAt\n");
   }
 
   // Prüfen, ob das Pokémon bereits gefangen wurde
@@ -48,8 +52,8 @@ app.post("/catch", (req, res) => {
     .slice(1)
     .filter((line) => line.trim() !== "")
     .map((line) => {
-      const [id, shiny, date] = line.split(",");
-      return { id: parseInt(id), shiny: shiny === "true", date };
+      const [id, name, shiny, date] = line.split(",");
+      return { id: parseInt(id), name, shiny: shiny === "true", date };
     });
 
   const alreadyCaught = userData.find((p) => p.id === parseInt(pokemonId));
@@ -58,12 +62,15 @@ app.post("/catch", (req, res) => {
     return res.send(`${username} hat Pokémon Nr. ${pokemonId} bereits gefangen.`);
   }
 
-  // Neues Pokémon hinzufügen
-  const newLine = `${pokemonId},${shiny},${caughtAt}\n`;
-  fs.appendFileSync(userFile, newLine);
-
+  // Pokémon hinzufügen, wenn gefangen
   const pokemonName = pokemonData.find((p) => p.id === parseInt(pokemonId))?.name || "Unbekanntes Pokémon";
-  res.send(`${username} hat ${pokemonName} (${pokemonId}) gefangen! ${shiny ? "✨ Shiny! ✨" : ""}`);
+  if (caught) {
+    const newLine = `${pokemonId},${pokemonName},${shiny},${caughtAt}\n`;
+    fs.appendFileSync(userFile, newLine);
+    return res.send(`${username} hat ${pokemonName} (${pokemonId}) gefangen! ${shiny ? "✨ Shiny! ✨" : ""}`);
+  } else {
+    return res.send(`${username} konnte ${pokemonName} (${pokemonId}) nicht fangen.`);
+  }
 });
 
 // Route: Benutzer-Pokédex anzeigen
@@ -82,8 +89,8 @@ app.get("/:username", (req, res) => {
     .slice(1)
     .filter((line) => line.trim() !== "")
     .map((line) => {
-      const [id, shiny, date] = line.split(",");
-      return { id: parseInt(id), shiny: shiny === "true", date };
+      const [id, name, shiny, date] = line.split(",");
+      return { id: parseInt(id), name, shiny: shiny === "true", date };
     });
 
   // Pokédex generieren
@@ -100,7 +107,7 @@ app.get("/:username", (req, res) => {
 
   pokemonData.forEach((pokemon) => {
     const userPokemon = userData.find((p) => p.id === pokemon.id);
-    const name = userPokemon ? pokemon.name : "????????";
+    const name = userPokemon ? userPokemon.name : "????????";
     const shiny = userPokemon && userPokemon.shiny ? "Ja" : "Nein";
     const date = userPokemon ? userPokemon.date : "-";
 

@@ -11,7 +11,7 @@ if (!fs.existsSync(userDir)) {
   fs.mkdirSync(userDir); // Ordner erstellen, falls nicht vorhanden
 }
 
-// Pokémon-Daten (151 Pokémon mit Pokedex-Eintrag)
+// Pokémon-Daten (151 Pokémon ohne Pokédex-Einträge)
 const pokemonData = JSON.parse(fs.readFileSync(path.join(__dirname, "pokedex.json"), "utf-8"));
 
 // Statische Dateien (z.B. index.html)
@@ -39,12 +39,22 @@ app.get("/:username", (req, res) => {
     });
 
   // HTML für den Pokédex generieren
-  let pokedexHTML = "<h1>Pokedex</h1><table border='1'><tr><th>#</th><th>Name</th><th>Shiny</th><th>Pokedex-Eintrag</th></tr>";
+  let pokedexHTML = `
+    <h1>Pokedex von ${username}</h1>
+    <table border='1'>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Shiny</th>
+        <th>Pokedex-Eintrag</th>
+      </tr>
+  `;
+
   pokemonData.forEach((pokemon) => {
     const userPokemon = userData.find((p) => p.id === pokemon.id);
     const name = userPokemon ? pokemon.name : "????????";
     const shiny = userPokemon && userPokemon.shiny ? "Ja" : "Nein";
-    const entry = userPokemon ? pokemon.entry : "???";
+    const entry = userPokemon ? pokemon.entry : "";
 
     pokedexHTML += `
       <tr>
@@ -61,7 +71,6 @@ app.get("/:username", (req, res) => {
     <html>
       <head><title>Pokedex von ${username}</title></head>
       <body>
-        <h1>Pokedex von ${username}</h1>
         ${pokedexHTML}
       </body>
     </html>

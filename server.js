@@ -26,25 +26,25 @@ app.get("/", (req, res) => {
   `);
 });
 
-// Route: Neues Pokémon fangen (POST)
-app.post("/catch", (req, res) => {
-  const { username, pokemonId } = req.body;
+app.post('/', (req, res) => {
+    const { username, pokemonId, pokemonName, caught, shiny } = req.body;
 
-  if (!username || !pokemonId) {
-    return res.status(400).send("Ungültige Anfrage: Fehlende oder ungültige Daten.");
-  }
+    if (!username || !pokemonId) {
+        return res.status(400).send('Ungültige Anfrage: username oder pokemonId fehlt.');
+    }
 
-  // Zufällige Berechnung von shiny und caught
-  const shiny = Math.random() < 0.1; // 10% Chance für Shiny
-  const caught = Math.random() < 0.5; // 50% Chance, gefangen zu werden
-  const caughtAt = new Date().toISOString();
+    // Beispiel: Speichere die Daten in der CSV
+    const userFile = path.join(userDir, `${username.toLowerCase()}.csv`);
+    if (!fs.existsSync(userFile)) {
+        fs.writeFileSync(userFile, 'PokemonID,PokemonName,Caught,Shiny\n');
+    }
 
-  const userFile = path.join(userDir, `${username.toLowerCase()}.csv`);
+    const newLine = `${pokemonId},${pokemonName},${caught},${shiny}\n`;
+    fs.appendFileSync(userFile, newLine);
 
-  // Prüfen, ob die Benutzerdatei existiert, falls nicht, erstellen
-  if (!fs.existsSync(userFile)) {
-    fs.writeFileSync(userFile, "PokemonID,Name,Shiny,CaughtAt\n");
-  }
+    res.send('Pokémon erfolgreich gespeichert!');
+});
+
 
   // Prüfen, ob das Pokémon bereits gefangen wurde
   const userData = fs.readFileSync(userFile, "utf-8")

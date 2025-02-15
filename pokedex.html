@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dein Pokédex</title>
     <style>
-         body {
+        /* Dark Mode Styles */
+        body {
             font-family: Arial, sans-serif;
             text-align: center;
             background-color: #121212; /* Dunkler Hintergrund */
@@ -69,10 +70,14 @@
                 }
 
                 data.forEach(pokemon => {
-                    const shinyText = pokemon.shiny ? "✨Shiny!✨" : "";
+                    const shinyText = pokemon.shiny ? '<span class="shiny">✨Shiny!✨</span>' : "";
+                    const status = pokemon.gefangen 
+                        ? '<span class="caught">◓Gefangen◓</span>' 
+                        : '<span class="not-caught">🞮Nicht gefangen🞮</span>';
+
                     pokedexDiv.innerHTML += `
                         <div class="pokemon">
-                            #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${pokemon.gefangen ? "◓Gefangen◓" : "🞮Nicht gefangen🞮"} ${shinyText}
+                            #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
                         </div>
                     `;
                 });

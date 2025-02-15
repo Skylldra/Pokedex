@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dein Pokédex</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f8f8f8;
+        }
+        h1 {
+            color: #333;
+        }
+        #pokedex {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .pokemon {
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pokédex von <span id="username"></span></h1>
+    <div id="pokedex">Lade Daten...</div>
+
+    <script>
+        // Twitch-Username aus der URL extrahieren
+        const path = window.location.pathname.split("/");
+        const username = path[path.length - 1];
+
+        document.getElementById("username").innerText = username;
+
+        // Pokédex-Daten abrufen
+        fetch(`/api/pokedex/${username}`)
+            .then(response => response.json())
+            .then(data => {
+                const pokedexDiv = document.getElementById("pokedex");
+                pokedexDiv.innerHTML = "";
+
+                if (data.length === 0) {
+                    pokedexDiv.innerHTML = "<p>Keine Pokémon gefunden!</p>";
+                    return;
+                }
+
+                data.forEach(pokemon => {
+                    const shinyText = pokemon.shiny ? "✨ Shiny!" : "";
+                    pokedexDiv.innerHTML += `
+                        <div class="pokemon">
+                            #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${pokemon.gefangen ? "Gefangen" : "Nicht gefangen"} ${shinyText}
+                        </div>
+                    `;
+                });
+            })
+            .catch(error => {
+                document.getElementById("pokedex").innerHTML = "<p>Fehler beim Laden der Daten!</p>";
+            });
+    </script>
+</body>
+</html>

@@ -25,7 +25,17 @@ app.get("/api/pokedex/:username", async (req, res) => {
             WHERE twitch_username = ${username}
             ORDER BY pokemon_id;
         `;
-        res.json(result);
+
+        // **Hier wird der Status-Text angepasst**
+        const formattedResult = result.map(entry => {
+            const status = entry.gefangen 
+                ? "✅ Im Pokéball gefangen!" 
+                : "❌ Entkommen...";
+            const shinyText = entry.shiny ? " ✨ Shiny!" : "";
+            return `#${entry.pokemon_id} ${entry.pokemon_name} - ${status}${shinyText}`;
+        });
+
+        res.json(formattedResult);
     } catch (error) {
         console.error("Fehler beim Abrufen des Pokédex:", error);
         res.status(500).json({ error: "Interner Serverfehler" });

@@ -19,12 +19,13 @@ app.use(express.static(path.join(__dirname)));
 app.get("/api/pokedex/:username", async (req, res) => {
     const username = req.params.username;
     try {
-        const result = await sql
+        const result = await sql`
             SELECT pokemon_id, pokemon_name, gefangen, shiny 
             FROM pokedex
             WHERE twitch_username = ${username}
             ORDER BY pokemon_id;
-        ;
+        `;
+
         res.json(result);
     } catch (error) {
         console.error("Fehler beim Abrufen des Pokédex:", error);

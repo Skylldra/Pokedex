@@ -5,25 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dein Pokédex</title>
     <style>
-        body {
+         body {
             font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f8f8f8;
+            background-color: #121212; /* Dunkler Hintergrund */
+            color: #E0E0E0; /* Helle Schrift */
+            margin: 0;
+            padding: 20px;
         }
         h1 {
-            color: #333;
+            color: #FFFFFF;
         }
         #pokedex {
             max-width: 600px;
             margin: auto;
             padding: 20px;
-            background: white;
+            background: #1E1E1E; /* Dunkle Box */
             border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1); /* Dezente Schatten */
         }
         .pokemon {
-            padding: 5px;
-            border-bottom: 1px solid #ddd;
+            padding: 10px;
+            border-bottom: 1px solid #333; /* Dezente Trennlinie */
+        }
+        .pokemon:last-child {
+            border-bottom: none; /* Letztes Element ohne Trennlinie */
+        }
+        /* Gefangen/Nicht Gefangen Icons */
+        .caught {
+            color: #4CAF50; /* Grün für gefangen */
+        }
+        .not-caught {
+            color: #FF5252; /* Rot für nicht gefangen */
+        }
+        /* Shiny Pokémon */
+        .shiny {
+            color: #FFD700; /* Gold für Shiny */
+            font-weight: bold;
         }
     </style>
 </head>
@@ -51,10 +69,10 @@
                 }
 
                 data.forEach(pokemon => {
-                    const shinyText = pokemon.shiny ? "✨ Shiny!" : "";
+                    const shinyText = pokemon.shiny ? "✨Shiny!✨" : "";
                     pokedexDiv.innerHTML += `
                         <div class="pokemon">
-                            #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${pokemon.gefangen ? "Gefangen" : "Nicht gefangen"} ${shinyText}
+                            #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${pokemon.gefangen ? "◓Gefangen◓" : "🞮Nicht gefangen🞮"} ${shinyText}
                         </div>
                     `;
                 });

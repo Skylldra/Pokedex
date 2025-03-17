@@ -1,4 +1,3 @@
-//Funktionierende Bilder im Pokedex
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -31,6 +30,7 @@
             border-bottom: 1px solid #333; /* Dezente Trennlinie */
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             text-align: left;
         }
         .pokemon:last-child {
@@ -52,8 +52,20 @@
         .pokemon-image {
             width: 40px;
             height: 40px;
-            margin-right: 10px;
+            margin-right: 15px;
             object-fit: contain;
+            flex-shrink: 0;
+        }
+        /* Container für das Bild - fixe Breite */
+        .image-container {
+            width: 60px;
+            display: flex;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        /* Container für den Pokedex-Text - gleiche Startposition */
+        .pokemon-info {
+            flex-grow: 1;
         }
     </style>
 </head>
@@ -86,8 +98,12 @@
                     
                     pokedexDiv.innerHTML += `
                         <div class="pokemon">
-                            <img src="${imageUrl}" alt="${pokemon.pokemon_name}" class="pokemon-image">
-                            <div>#${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}</div>
+                            <div class="image-container">
+                                <img src="${imageUrl}" alt="${pokemon.pokemon_name}" class="pokemon-image">
+                            </div>
+                            <div class="pokemon-info">
+                                #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
+                            </div>
                         </div>
                     `;
                 });

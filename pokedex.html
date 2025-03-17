@@ -30,7 +30,7 @@
             border-bottom: 1px solid #333; /* Dezente Trennlinie */
             display: flex;
             align-items: center;
-            justify-content: flex-start; /* Linksbündig statt zentriert */
+            justify-content: center; /* Zentriert die Elemente horizontal */
             text-align: left;
         }
         .pokemon:last-child {
@@ -66,8 +66,9 @@
         .pokemon-entry {
             display: flex;
             align-items: center;
-            max-width: 100%; /* Volle Breite nutzen */
+            white-space: nowrap; /* Verhindert Umbruch */
             overflow: hidden; /* Bei Überlauf abschneiden */
+            max-width: 500px; /* Feste Breite für die Einträge */
         }
         
         /* Pokemon Info Bereich */
@@ -75,7 +76,6 @@
             white-space: nowrap; /* Verhindert Umbruch */
             overflow: hidden; /* Versteckt Überlauf */
             text-overflow: ellipsis; /* Zeigt "..." bei Überlauf */
-            flex-grow: 1;
         }
         
         /* Modal-Style für die vergrößerte Ansicht */
@@ -252,11 +252,13 @@
                     
                     pokedexDiv.innerHTML += `
                         <div class="pokemon">
-                            <img src="${imageUrl}" alt="${pokemon.pokemon_name}" 
-                                 class="pokemon-image" 
-                                 onclick="openModal(${pokemon.pokemon_id}, '${pokemon.pokemon_name}', '${imageUrl}')">
-                            <div class="pokemon-info">
-                                #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
+                            <div class="pokemon-entry">
+                                <img src="${imageUrl}" alt="${pokemon.pokemon_name}" 
+                                     class="pokemon-image" 
+                                     onclick="openModal(${pokemon.pokemon_id}, '${pokemon.pokemon_name}', '${imageUrl}')">
+                                <div class="pokemon-info">
+                                    #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
+                                </div>
                             </div>
                         </div>
                     `;

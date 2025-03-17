@@ -1,4 +1,3 @@
-//Final Version last milestone
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -29,6 +28,9 @@
         .pokemon {
             padding: 10px;
             border-bottom: 1px solid #333; /* Dezente Trennlinie */
+            display: flex;
+            align-items: center;
+            text-align: left;
         }
         .pokemon:last-child {
             border-bottom: none; /* Letztes Element ohne Trennlinie */
@@ -45,40 +47,46 @@
             color: #FFD700; /* Gold für Shiny */
             font-weight: bold;
         }
+        /* Pokemon Bild Styling */
+        .pokemon-image {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
     </style>
 </head>
 <body>
     <h1>Pokédex von <span id="username"></span></h1>
     <div id="pokedex">Lade Daten...</div>
-
     <script>
         // Twitch-Username aus der URL extrahieren
         const path = window.location.pathname.split("/");
         const username = path[path.length - 1];
-
         document.getElementById("username").innerText = username;
-
         // Pokédex-Daten abrufen
         fetch(`/api/pokedex/${username}`)
             .then(response => response.json())
             .then(data => {
                 const pokedexDiv = document.getElementById("pokedex");
                 pokedexDiv.innerHTML = "";
-
                 if (data.length === 0) {
                     pokedexDiv.innerHTML = "<p>Keine Pokémon gefunden!</p>";
                     return;
                 }
-
                 data.forEach(pokemon => {
                     const shinyText = pokemon.shiny ? '<span class="shiny">✨Shiny!✨</span>' : "";
                     const status = pokemon.gefangen 
                         ? '<span class="caught">◓Gefangen◓</span>' 
                         : '<span class="not-caught">🞮Nicht gefangen🞮</span>';
-
+                    // Formatierung der Pokémon-ID für den Bildpfad (z.B. 001.png, 025.png)
+                    const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
+                    const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
+                    
                     pokedexDiv.innerHTML += `
                         <div class="pokemon">
-                            #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
+                            <img src="${imageUrl}" alt="${pokemon.pokemon_name}" class="pokemon-image">
+                            <div>#${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}</div>
                         </div>
                     `;
                 });

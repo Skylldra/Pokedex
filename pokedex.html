@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -18,13 +17,28 @@
         h1 {
             color: #FFFFFF;
         }
-        #pokedex {
-            max-width: 600px;
+        #pokedex-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1200px;
             margin: auto;
+        }
+        .pokedex-column {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
             padding: 20px;
             background: #1E1E1E; /* Dunkle Box */
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1); /* Dezente Schatten */
+        }
+        .column-title {
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+            color: #FFFFFF;
         }
         .pokemon {
             padding: 10px;
@@ -69,7 +83,7 @@
             align-items: center;
             white-space: nowrap; /* Verhindert Umbruch */
             overflow: hidden; /* Bei Überlauf abschneiden */
-            max-width: 500px; /* Feste Breite für die Einträge */
+            width: 100%; /* Feste Breite für die Einträge */
         }
         
         /* Pokemon Info Bereich */
@@ -146,11 +160,32 @@
         .close-button:hover {
             color: #FF5252;
         }
+
+        /* Responsive Design für mobile Geräte */
+        @media (max-width: 768px) {
+            #pokedex-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .pokedex-column {
+                width: 100%;
+                max-width: 95%;
+            }
+        }
     </style>
 </head>
 <body>
     <h1>Pokédex von <span id="username"></span></h1>
-    <div id="pokedex">Lade Daten...</div>
+    <div id="pokedex-container">
+        <div id="caught-pokemon" class="pokedex-column">
+            <h2 class="column-title">Gefangene Pokémon</h2>
+            <div id="caught-list">Lade Daten...</div>
+        </div>
+        <div id="seen-pokemon" class="pokedex-column">
+            <h2 class="column-title">Gesehene Pokémon</h2>
+            <div id="seen-list">Lade Daten...</div>
+        </div>
+    </div>
     
     <!-- Modal für die vergrößerte Ansicht -->
     <div id="pokemonModal" class="modal">
@@ -232,41 +267,81 @@
             }
         };
         
-        // Pokédex-Daten abrufen
+        // Pokédex-Daten abrufen und in zwei Listen aufteilen
         fetch(`/api/pokedex/${username}`)
             .then(response => response.json())
             .then(data => {
-                const pokedexDiv = document.getElementById("pokedex");
-                pokedexDiv.innerHTML = "";
+                const caughtList = document.getElementById("caught-list");
+                const seenList = document.getElementById("seen-list");
+                
+                // Listen leeren
+                caughtList.innerHTML = "";
+                seenList.innerHTML = "";
+                
+                // Prüfen, ob Daten vorhanden sind
                 if (data.length === 0) {
-                    pokedexDiv.innerHTML = "<p>Keine Pokémon gefunden!</p>";
+                    caughtList.innerHTML = "<p>Keine Pokémon gefunden!</p>";
+                    seenList.innerHTML = "<p>Keine Pokémon gefunden!</p>";
                     return;
                 }
+                
+                // Zähler für gefangene und gesehene Pokémon
+                let caughtCount = 0;
+                let seenCount = 0;
+                
+                // Daten nach gefangen/gesehen sortieren
                 data.forEach(pokemon => {
                     const shinyText = pokemon.shiny ? '<span class="shiny">✨Shiny!✨</span>' : "";
                     const status = pokemon.gefangen 
                         ? '<span class="caught">◓Gefangen◓</span>' 
                         : '<span class="not-caught">🞮Nicht gefangen🞮</span>';
-                    // Formatierung der Pokémon-ID für den Bildpfad (z.B. 001.png, 025.png)
+                    
+                    // Formatierung der Pokémon-ID für den Bildpfad
                     const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
                     const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
                     
-                    pokedexDiv.innerHTML += `
+                    // HTML für den Pokémon-Eintrag erstellen
+                    const pokemonEntry = `
                         <div class="pokemon">
                             <div class="pokemon-entry">
                                 <img src="${imageUrl}" alt="${pokemon.pokemon_name}" 
                                      class="pokemon-image" 
                                      onclick="openModal(${pokemon.pokemon_id}, '${pokemon.pokemon_name}', '${imageUrl}')">
                                 <div class="pokemon-info">
-                                    #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
+                                    #${pokemon.pokemon_id} ${pokemon.pokemon_name} ${shinyText}
                                 </div>
                             </div>
                         </div>
                     `;
+                    
+                    // Je nach Status zur entsprechenden Liste hinzufügen
+                    if (pokemon.gefangen) {
+                        caughtList.innerHTML += pokemonEntry;
+                        caughtCount++;
+                    } else {
+                        seenList.innerHTML += pokemonEntry;
+                        seenCount++;
+                    }
                 });
+                
+                // Wenn eine Liste leer ist, entsprechende Nachricht anzeigen
+                if (caughtCount === 0) {
+                    caughtList.innerHTML = "<p>Keine gefangenen Pokémon!</p>";
+                }
+                if (seenCount === 0) {
+                    seenList.innerHTML = "<p>Keine gesehenen Pokémon!</p>";
+                }
+                
+                // Aktualisiere die Spaltenüberschriften mit der Anzahl
+                document.querySelector("#caught-pokemon .column-title").innerText = 
+                    `Gefangene Pokémon (${caughtCount})`;
+                document.querySelector("#seen-pokemon .column-title").innerText = 
+                    `Gesehene Pokémon (${seenCount})`;
             })
             .catch(error => {
-                document.getElementById("pokedex").innerHTML = "<p>Fehler beim Laden der Daten!</p>";
+                document.getElementById("caught-list").innerHTML = "<p>Fehler beim Laden der Daten!</p>";
+                document.getElementById("seen-list").innerHTML = "<p>Fehler beim Laden der Daten!</p>";
+                console.error("Fehler beim Laden der Pokédex-Daten:", error);
             });
     </script>
 </body>

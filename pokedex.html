@@ -30,7 +30,7 @@
             border-bottom: 1px solid #333; /* Dezente Trennlinie */
             display: flex;
             align-items: center;
-            justify-content: center; /* Zentriert die Elemente horizontal */
+            justify-content: flex-start; /* Linksbündig statt zentriert */
             text-align: left;
         }
         .pokemon:last-child {
@@ -47,6 +47,7 @@
         .shiny {
             color: #FFD700; /* Gold für Shiny */
             font-weight: bold;
+            white-space: nowrap; /* Verhindert Umbruch */
         }
         /* Pokemon Bild Styling */
         .pokemon-image {
@@ -61,11 +62,20 @@
         .pokemon-image:hover {
             transform: scale(1.1); /* Leicht vergrößern beim Hover */
         }
-        /* Container für den Pokemon Eintrag - feste Breite & zentriert */
+        /* Container für den Pokemon Eintrag */
         .pokemon-entry {
-            width: 350px; /* Feste Breite für alle Einträge */
             display: flex;
             align-items: center;
+            max-width: 100%; /* Volle Breite nutzen */
+            overflow: hidden; /* Bei Überlauf abschneiden */
+        }
+        
+        /* Pokemon Info Bereich */
+        .pokemon-info {
+            white-space: nowrap; /* Verhindert Umbruch */
+            overflow: hidden; /* Versteckt Überlauf */
+            text-overflow: ellipsis; /* Zeigt "..." bei Überlauf */
+            flex-grow: 1;
         }
         
         /* Modal-Style für die vergrößerte Ansicht */
@@ -112,13 +122,14 @@
         
         .modal-description {
             width: 100%;
-            text-align: center; /* Text zentrieren */
             background-color: #2A2A2A;
             padding: 15px;
             border-radius: 8px;
             margin-top: 10px;
             max-height: 200px;
             overflow-y: auto;
+            text-align: left; /* Linksbündiger Text */
+            line-height: 1.6; /* Erhöhter Zeilenabstand */
         }
         
         .close-button {
@@ -241,13 +252,11 @@
                     
                     pokedexDiv.innerHTML += `
                         <div class="pokemon">
-                            <div class="pokemon-entry">
-                                <img src="${imageUrl}" alt="${pokemon.pokemon_name}" 
-                                     class="pokemon-image" 
-                                     onclick="openModal(${pokemon.pokemon_id}, '${pokemon.pokemon_name}', '${imageUrl}')">
-                                <div>
-                                    #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
-                                </div>
+                            <img src="${imageUrl}" alt="${pokemon.pokemon_name}" 
+                                 class="pokemon-image" 
+                                 onclick="openModal(${pokemon.pokemon_id}, '${pokemon.pokemon_name}', '${imageUrl}')">
+                            <div class="pokemon-info">
+                                #${pokemon.pokemon_id} ${pokemon.pokemon_name} - ${status} ${shinyText}
                             </div>
                         </div>
                     `;

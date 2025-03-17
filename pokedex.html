@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -119,12 +118,14 @@
             position: absolute;
             right: 0;
             top: 40px;
-            background-color: #1E1E1E;
+            background-color: rgba(30, 30, 30, 0.9);
             border: 2px solid #FFCB05;
             border-radius: 5px;
-            width: 200px;
+            width: 250px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
             z-index: 101;
+            max-height: 80vh;
+            overflow-y: auto;
         }
         
         .theme-dropdown.active {
@@ -135,16 +136,32 @@
             padding: 10px 15px;
             color: #E0E0E0;
             cursor: pointer;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.7);
             transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
         }
         
         .theme-option:hover {
-            background-color: #333;
+            background-color: rgba(51, 51, 51, 0.7);
         }
         
         .theme-option:last-child {
             border-bottom: none;
+        }
+        
+        .theme-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            margin-right: 10px;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .theme-option span {
+            flex: 1;
         }
         
         h1 {
@@ -335,17 +352,51 @@
     <div class="theme-selector">
         <button id="theme-btn" class="theme-button">Hintergrund ändern</button>
         <div id="theme-dropdown" class="theme-dropdown">
-            <div class="theme-option" data-theme="dark">Standard (Dunkel)</div>
-            <div class="theme-option" data-theme="wall1">Poké-Wimmelbild</div>
-            <div class="theme-option" data-theme="wall2">Giganten von Raum und Zeit</div>
-            <div class="theme-option" data-theme="wall3">Relistische Pokébälle</div>
-            <div class="theme-option" data-theme="wall4">Great wave of Kanagawa</div>
-            <div class="theme-option" data-theme="wall5">Girantina</div>
-            <div class="theme-option" data-theme="wall6">Arceus</div>
-            <div class="theme-option" data-theme="wall7">Strandtag mit Plinfa</div>
-            <div class="theme-option" data-theme="wall8">Guardevoir's Blumenwiese</div>
+            <div class="theme-option" data-theme="dark">
+                <div class="theme-preview" style="background-color: #121212;"></div>
+                <span>Standard (Dunkel)</span>
+            </div>
+            <div class="theme-option" data-theme="wall1">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper1.jpg');"></div>
+                <span>Poké-Wimmelbild</span>
+            </div>
+            <div class="theme-option" data-theme="wall2">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper2.jpg');"></div>
+                <span>Giganten von Raum und Zeit</span>
+            </div>
+            <div class="theme-option" data-theme="wall3">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper3.jpg');"></div>
+                <span>Realistische Pokébälle</span>
+            </div>
+            <div class="theme-option" data-theme="wall4">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper4.jpg');"></div>
+                <span>Great wave of Kanagawa</span>
+            </div>
+            <div class="theme-option" data-theme="wall5">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper5.jpg');"></div>
+                <span>Girantina</span>
+            </div>
+            <div class="theme-option" data-theme="wall6">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper6.jpg');"></div>
+                <span>Arceus</span>
+            </div>
+            <div class="theme-option" data-theme="wall7">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper7.jpg');"></div>
+                <span>Strandtag mit Plinfa</span>
+            </div>
+            <div class="theme-option" data-theme="wall8">
+                <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper8.jpg');"></div>
+                <span>Guardevoir's Blumenwiese</span>
+            </div>
             <div class="theme-option custom-upload">
-                <label for="custom-bg-upload">Eigenes Bild hochladen</label>
+                <div class="theme-preview" style="background-color: #3B5BA7; display: flex; justify-content: center; align-items: center;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFCB05" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                </div>
+                <span>Eigenes Bild hochladen</span>
                 <input type="file" id="custom-bg-upload" accept="image/*" style="display: none;">
             </div>
         </div>

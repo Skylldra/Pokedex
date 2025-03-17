@@ -171,9 +171,9 @@
             min-width: 250px;
             max-width: 350px; /* Schmalere Tabellen */
             padding: 20px;
-            background: #1E1E1E; /* Dunkle Box */
+            background: rgba(30, 30, 30, 0.8); /* Halbdurchsichtiger Hintergrund */
             border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.1); /* Dezente Schatten */
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3); /* Angepasster Schatten für Transparenz */
         }
         #caught-pokemon {
             border: 3px solid #4CAF50; /* Grüne Umrandung für gefangene Pokémon */
@@ -184,7 +184,7 @@
         .column-title {
             margin-top: 0;
             padding-bottom: 10px;
-            border-bottom: 1px solid #333;
+            border-bottom: 1px solid rgba(51, 51, 51, 0.7);
         }
         #caught-pokemon .column-title {
             color: #4CAF50; /* Grüne Überschrift für gefangene Pokémon */
@@ -194,7 +194,7 @@
         }
         .pokemon {
             padding: 10px;
-            border-bottom: 1px solid #333; /* Dezente Trennlinie */
+            border-bottom: 1px solid rgba(51, 51, 51, 0.7); /* Leicht transparente Trennlinie */
             display: flex;
             align-items: center;
             justify-content: center; /* Zentriert die Elemente horizontal */
@@ -335,14 +335,14 @@
         <button id="theme-btn" class="theme-button">Hintergrund ändern</button>
         <div id="theme-dropdown" class="theme-dropdown">
             <div class="theme-option" data-theme="dark">Standard (Dunkel)</div>
-            <div class="theme-option" data-theme="wall1">Poké-Wimmelbild</div>
-            <div class="theme-option" data-theme="wall2">Giganten von Raum und Zeit</div>
-            <div class="theme-option" data-theme="wall3">Relistische Pokébälle</div>
-            <div class="theme-option" data-theme="wall4">Great wave of Kanagawa</div>
-            <div class="theme-option" data-theme="wall5">Girantina</div>
-            <div class="theme-option" data-theme="wall6">Arceus</div>
-            <div class="theme-option" data-theme="wall7">Strandtag mit Plinfa</div>
-            <div class="theme-option" data-theme="wall8">Guardevoir's Blumenwiese</div>
+            <div class="theme-option" data-theme="wall1">Wald-Hintergrund</div>
+            <div class="theme-option" data-theme="wall2">Wasser-Hintergrund</div>
+            <div class="theme-option" data-theme="wall3">Feuer-Hintergrund</div>
+            <div class="theme-option" data-theme="wall4">Elektro-Hintergrund</div>
+            <div class="theme-option" data-theme="wall5">Psycho-Hintergrund</div>
+            <div class="theme-option" data-theme="wall6">Geist-Hintergrund</div>
+            <div class="theme-option" data-theme="wall7">Kampf-Hintergrund</div>
+            <div class="theme-option" data-theme="wall8">Eis-Hintergrund</div>
             <div class="theme-option custom-upload">
                 <label for="custom-bg-upload">Eigenes Bild hochladen</label>
                 <input type="file" id="custom-bg-upload" accept="image/*" style="display: none;">

@@ -1,4 +1,18 @@
-<!DOCTYPE html>
+// Eigenes Bild hochladen-Handler
+            customUpload.querySelector('input').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const customBg = e.target.result;
+                        document.body.style.backgroundImage = `url(${customBg})`;
+                        document.body.className = 'theme-custom';
+                        saveCustomBackground(customBg);
+                        themeDropdown.classList.remove('active');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });<!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -121,11 +135,12 @@
             background-color: rgba(30, 30, 30, 0.9);
             border: 2px solid #FFCB05;
             border-radius: 5px;
-            width: 250px;
+            width: 260px;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
             z-index: 101;
             max-height: 80vh;
             overflow-y: auto;
+            padding: 5px;
         }
         
         .theme-dropdown.active {
@@ -133,35 +148,51 @@
         }
         
         .theme-option {
-            padding: 10px 15px;
+            margin-bottom: 8px;
             color: #E0E0E0;
             cursor: pointer;
-            border-bottom: 1px solid rgba(51, 51, 51, 0.7);
-            transition: background-color 0.2s;
-            display: flex;
-            align-items: center;
+            border-radius: 4px;
+            overflow: hidden;
+            background-color: rgba(51, 51, 51, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         
         .theme-option:hover {
-            background-color: rgba(51, 51, 51, 0.7);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         
         .theme-option:last-child {
-            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .theme-title {
+            padding: 8px 10px;
+            text-align: center;
+            background-color: rgba(30, 30, 30, 0.8);
+            font-weight: bold;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
         
         .theme-preview {
-            width: 40px;
-            height: 40px;
-            border-radius: 4px;
-            margin-right: 10px;
+            width: 100%;
+            height: 100px;
             background-size: cover;
             background-position: center;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
         
-        .theme-option span {
-            flex: 1;
+        .theme-option.custom-upload .theme-preview {
+            background-color: #3B5BA7;
+            height: 80px;
+        }
+        
+        .upload-icon {
+            width: 40px;
+            height: 40px;
+            color: #FFCB05;
         }
         
         h1 {
@@ -353,50 +384,50 @@
         <button id="theme-btn" class="theme-button">Hintergrund ändern</button>
         <div id="theme-dropdown" class="theme-dropdown">
             <div class="theme-option" data-theme="dark">
+                <div class="theme-title">Standard (Dunkel)</div>
                 <div class="theme-preview" style="background-color: #121212;"></div>
-                <span>Standard (Dunkel)</span>
             </div>
             <div class="theme-option" data-theme="wall1">
+                <div class="theme-title">Poké-Wimmelbild</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper1.jpg');"></div>
-                <span>Poké-Wimmelbild</span>
             </div>
             <div class="theme-option" data-theme="wall2">
+                <div class="theme-title">Giganten von Raum und Zeit</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper2.jpg');"></div>
-                <span>Giganten von Raum und Zeit</span>
             </div>
             <div class="theme-option" data-theme="wall3">
+                <div class="theme-title">Realistische Pokébälle</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper3.jpg');"></div>
-                <span>Realistische Pokébälle</span>
             </div>
             <div class="theme-option" data-theme="wall4">
+                <div class="theme-title">Great wave of Kanagawa</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper4.jpg');"></div>
-                <span>Great wave of Kanagawa</span>
             </div>
             <div class="theme-option" data-theme="wall5">
+                <div class="theme-title">Girantina</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper5.jpg');"></div>
-                <span>Girantina</span>
             </div>
             <div class="theme-option" data-theme="wall6">
+                <div class="theme-title">Arceus</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper6.jpg');"></div>
-                <span>Arceus</span>
             </div>
             <div class="theme-option" data-theme="wall7">
+                <div class="theme-title">Strandtag mit Plinfa</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper7.jpg');"></div>
-                <span>Strandtag mit Plinfa</span>
             </div>
             <div class="theme-option" data-theme="wall8">
+                <div class="theme-title">Guardevoir's Blumenwiese</div>
                 <div class="theme-preview" style="background-image: url('/Wallpaper/Wallpaper8.jpg');"></div>
-                <span>Guardevoir's Blumenwiese</span>
             </div>
             <div class="theme-option custom-upload">
-                <div class="theme-preview" style="background-color: #3B5BA7; display: flex; justify-content: center; align-items: center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFCB05" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <div class="theme-title">Eigenes Bild hochladen</div>
+                <div class="theme-preview">
+                    <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
                     </svg>
                 </div>
-                <span>Eigenes Bild hochladen</span>
                 <input type="file" id="custom-bg-upload" accept="image/*" style="display: none;">
             </div>
         </div>
@@ -480,18 +511,11 @@
             });
             
             // Eigenes Bild hochladen
-            customUpload.addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        const customBg = e.target.result;
-                        document.body.style.backgroundImage = `url(${customBg})`;
-                        document.body.className = 'theme-custom';
-                        saveCustomBackground(customBg);
-                        themeDropdown.classList.remove('active');
-                    };
-                    reader.readAsDataURL(file);
+            customUpload.addEventListener('click', function(event) {
+                // Verhindert, dass das Klicken direkt das Datei-Dialog öffnet,
+                // stattdessen wird das Input-Element programmgesteuert geklickt
+                if (event.target !== customUpload.querySelector('input')) {
+                    customUpload.querySelector('input').click();
                 }
             });
             

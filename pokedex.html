@@ -83,8 +83,9 @@
         
         .modal-content {
             margin: 5% auto;
-            max-width: 80%;
-            max-height: 90%;
+            width: auto;
+            max-width: 90%;
+            min-width: 300px;
             background-color: #1E1E1E;
             border-radius: 10px;
             box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
@@ -97,8 +98,8 @@
         }
         
         .modal-image {
-            max-width: 100%;
-            max-height: 300px;
+            width: 150px; /* Größeres Bild im Modal */
+            height: 150px;
             object-fit: contain;
             margin-bottom: 20px;
         }
@@ -111,7 +112,7 @@
         
         .modal-description {
             width: 100%;
-            text-align: left;
+            text-align: center; /* Text zentrieren */
             background-color: #2A2A2A;
             padding: 15px;
             border-radius: 8px;
@@ -177,6 +178,7 @@
             const modalImage = document.getElementById("modalImage");
             const modalInfo = document.getElementById("modalInfo");
             const modalDescription = document.getElementById("modalDescription");
+            const modalContent = document.querySelector(".modal-content");
             
             // Setze Bild und Grundinfos
             modalImage.src = imageUrl;
@@ -186,8 +188,21 @@
             // Setze die Beschreibung (wenn verfügbar)
             if (pokedexEntries[pokemonId]) {
                 modalDescription.innerHTML = pokedexEntries[pokemonId];
+                
+                // Modal-Größe an Textlänge anpassen
+                // Kurzer Timeout, damit der Text zuerst gerendert wird
+                setTimeout(() => {
+                    const textLength = modalDescription.textContent.length;
+                    const baseWidth = 300; // Mindestbreite
+                    const maxWidth = 600; // Maximale Breite
+                    
+                    // Berechne Breite basierend auf Textlänge
+                    const width = Math.min(baseWidth + textLength * 0.8, maxWidth);
+                    modalContent.style.width = width + "px";
+                }, 50);
             } else {
                 modalDescription.innerHTML = `<p>Kein Pokédex-Eintrag für ${pokemonName} gefunden.</p>`;
+                modalContent.style.width = "300px"; // Standardbreite für kurzen Text
             }
             
             // Zeige Modal

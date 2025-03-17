@@ -119,6 +119,13 @@
             margin-top: 10px;
             max-height: 200px;
             overflow-y: auto;
+            line-height: 1.6; /* Besserer Zeilenabstand */
+        }
+        
+        .modal-description p {
+            margin: 0 0 10px 0; /* Abstand zwischen Absätzen */
+            text-align: left; /* Text linksbündig für bessere Lesbarkeit */
+            padding: 0 10px; /* Seitenränder für den Text */
         }
         
         .close-button {
@@ -187,10 +194,10 @@
             
             // Setze die Beschreibung (wenn verfügbar)
             if (pokedexEntries[pokemonId]) {
-                modalDescription.innerHTML = pokedexEntries[pokemonId];
+                // Verarbeite Text für bessere Zeilenumbrüche
+                modalDescription.innerHTML = formatPokedexEntry(pokedexEntries[pokemonId]);
                 
                 // Modal-Größe an Textlänge anpassen
-                // Kurzer Timeout, damit der Text zuerst gerendert wird
                 setTimeout(() => {
                     const textLength = modalDescription.textContent.length;
                     const baseWidth = 300; // Mindestbreite
@@ -207,6 +214,31 @@
             
             // Zeige Modal
             modal.style.display = "block";
+        }
+        
+        // Funktion zum Formatieren der Pokédex-Einträge mit besseren Umbrüchen
+        function formatPokedexEntry(text) {
+            // Ersetze existierende <p> Tags durch temporäre Markierungen
+            let formattedText = text.replace(/<p>/g, "§PARAGRAPH_START§").replace(/<\/p>/g, "§PARAGRAPH_END§");
+            
+            // Teile den Text an Punkten auf, aber behalte die Punkte bei
+            let sentences = formattedText.split(/(?<=\.)\s+/);
+            
+            // Setze den formatierten Text zusammen, jeder Satz in eigenem Absatz wenn nicht schon in <p> Tags
+            formattedText = sentences.map(sentence => {
+                // Wenn der Satz bereits Teil eines Paragraphen ist, nicht neu verpacken
+                if (sentence.includes("§PARAGRAPH_START§") || sentence.includes("§PARAGRAPH_END§")) {
+                    return sentence;
+                }
+                return `<p>${sentence}</p>`;
+            }).join('');
+            
+            // Stelle die ursprünglichen <p> Tags wieder her
+            formattedText = formattedText
+                .replace(/§PARAGRAPH_START§/g, "<p>")
+                .replace(/§PARAGRAPH_END§/g, "</p>");
+            
+            return formattedText;
         }
         
         function closeModal() {

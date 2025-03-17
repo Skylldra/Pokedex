@@ -44,8 +44,8 @@
         }
         .pokedex-column {
             flex: 1;
-            min-width: 300px;
-            max-width: 500px;
+            min-width: 250px;
+            max-width: 350px; /* Schmalere Tabellen */
             padding: 20px;
             background: #1E1E1E; /* Dunkle Box */
             border-radius: 10px;
@@ -109,6 +109,7 @@
         .pokemon-entry {
             display: flex;
             align-items: center;
+            justify-content: center; /* Zentriert die Pokémon horizontal */
             white-space: nowrap; /* Verhindert Umbruch */
             overflow: hidden; /* Bei Überlauf abschneiden */
             width: 100%; /* Feste Breite für die Einträge */
@@ -119,6 +120,7 @@
             white-space: nowrap; /* Verhindert Umbruch */
             overflow: hidden; /* Versteckt Überlauf */
             text-overflow: ellipsis; /* Zeigt "..." bei Überlauf */
+            text-align: center; /* Zentriert den Text */
         }
         
         /* Modal-Style für die vergrößerte Ansicht */

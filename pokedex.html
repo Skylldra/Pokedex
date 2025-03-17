@@ -453,6 +453,12 @@
             const themeDropdown = document.getElementById('theme-dropdown');
             const themeOptions = document.querySelectorAll('.theme-option');
             const customUpload = document.getElementById('custom-bg-upload');
+            const customUploadOption = document.querySelector('.theme-option.custom-upload');
+
+            // Klick auf die Upload-Option leitet zum Datei-Input weiter
+            customUploadOption.addEventListener('click', function() {
+                customUpload.click();
+            });
 
             // Gespeichertes Theme laden
             loadSavedTheme();

@@ -178,95 +178,110 @@
             letter-spacing: 1px;
             margin-bottom: 30px;
         }
+        
         #pokedex-container {
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            max-width: 1200px;
+            flex-direction: column;
+            max-width: 1400px;
             margin: auto;
         }
-        .pokedex-column {
-            flex: 1;
-            min-width: 250px;
-            max-width: 350px; /* Schmalere Tabellen */
+        
+        .pokedex-section {
             padding: 20px;
-            background: rgba(30, 30, 30, 0.8); /* Halbdurchsichtiger Hintergrund */
+            background: rgba(30, 30, 30, 0.8);
             border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3); /* Angepasster Schatten für Transparenz */
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            margin-bottom: 20px;
         }
+        
         #caught-pokemon {
             border: 3px solid #4CAF50; /* Grüne Umrandung für gefangene Pokémon */
         }
+        
         #seen-pokemon {
             border: 3px solid #FF5252; /* Rote Umrandung für gesehene Pokémon */
         }
-        .column-title {
+        
+        .section-title {
             margin-top: 0;
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(51, 51, 51, 0.7);
         }
-        #caught-pokemon .column-title {
+        
+        #caught-pokemon .section-title {
             color: #4CAF50; /* Grüne Überschrift für gefangene Pokémon */
         }
-        #seen-pokemon .column-title {
+        
+        #seen-pokemon .section-title {
             color: #FF5252; /* Rote Überschrift für gesehene Pokémon */
         }
-        .pokemon {
+        
+        .pokemon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            justify-content: start;
+        }
+        
+        .pokemon-card {
+            background-color: rgba(20, 20, 20, 0.7);
+            border-radius: 8px;
             padding: 10px;
-            border-bottom: 1px solid rgba(51, 51, 51, 0.7); /* Leicht transparente Trennlinie */
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center; /* Zentriert die Elemente horizontal */
-            text-align: left;
+            transition: transform 0.2s, background-color 0.2s;
+            cursor: pointer;
         }
-        .pokemon:last-child {
-            border-bottom: none; /* Letztes Element ohne Trennlinie */
+        
+        .pokemon-card:hover {
+            transform: translateY(-5px);
+            background-color: rgba(40, 40, 40, 0.8);
         }
-        /* Gefangen/Nicht Gefangen Icons */
-        .caught {
-            color: #4CAF50; /* Grün für gefangen */
-        }
-        .not-caught {
-            color: #FF5252; /* Rot für nicht gefangen */
-        }
-        /* Shiny Pokémon */
-        .shiny {
-            color: #FFD700; /* Gold für Shiny */
-            font-weight: bold;
-            white-space: nowrap; /* Verhindert Umbruch */
-        }
-        /* Pokemon Bild Styling */
+        
         .pokemon-image {
-            width: 40px;
-            height: 40px;
-            margin-right: 15px;
+            width: 60px;
+            height: 60px;
             object-fit: contain;
-            flex-shrink: 0;
-            cursor: pointer; /* Zeigt an, dass das Bild klickbar ist */
-            transition: transform 0.2s; /* Sanfte Hover-Animation */
+            margin-bottom: 8px;
         }
-        .pokemon-image:hover {
-            transform: scale(1.1); /* Leicht vergrößern beim Hover */
+        
+        .pokemon-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin: 5px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 100%;
+            text-align: center;
         }
-        /* Container für den Pokemon Eintrag */
-        .pokemon-entry {
-            display: flex;
-            align-items: center;
-            justify-content: center; /* Zentriert die Pokémon horizontal */
-            white-space: nowrap; /* Verhindert Umbruch */
-            overflow: hidden; /* Bei Überlauf abschneiden */
-            width: 100%; /* Feste Breite für die Einträge */
+        
+        .pokemon-id {
+            font-size: 0.8rem;
+            color: #999;
         }
-
-        /* Pokemon Info Bereich */
-        .pokemon-info {
-            white-space: nowrap; /* Verhindert Umbruch */
-            overflow: hidden; /* Versteckt Überlauf */
-            text-overflow: ellipsis; /* Zeigt "..." bei Überlauf */
-            text-align: center; /* Zentriert den Text */
+        
+        /* Shiny Indicator */
+        .shiny-indicator {
+            color: #FFD700;
+            font-size: 1.2rem;
+            margin-left: 5px;
         }
-
+        
+        /* Status Indicator */
+        .status-caught {
+            color: #4CAF50;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
+        .status-seen {
+            color: #FF5252;
+            font-size: 0.8rem;
+            margin-top: 5px;
+        }
+        
         /* Modal-Style für die vergrößerte Ansicht */
         .modal {
             display: none;
@@ -335,15 +350,23 @@
             color: #FF5252;
         }
 
+        /* Empty state message */
+        .empty-message {
+            padding: 20px;
+            font-style: italic;
+            color: #999;
+        }
+
         /* Responsive Design für mobile Geräte */
         @media (max-width: 768px) {
-            #pokedex-container {
-                flex-direction: column;
-                align-items: center;
+            .pokemon-grid {
+                grid-template-columns: repeat(3, 1fr);
             }
-            .pokedex-column {
-                width: 100%;
-                max-width: 95%;
+        }
+        
+        @media (max-width: 480px) {
+            .pokemon-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
@@ -405,13 +428,18 @@
     </div>
 
     <div id="pokedex-container">
-        <div id="caught-pokemon" class="pokedex-column">
-            <h2 class="column-title">Gefangene Pokémon</h2>
-            <div id="caught-list">Lade Daten...</div>
+        <div id="caught-pokemon" class="pokedex-section">
+            <h2 class="section-title">Gefangene Pokémon</h2>
+            <div id="caught-grid" class="pokemon-grid">
+                <div class="empty-message">Lade Daten...</div>
+            </div>
         </div>
-        <div id="seen-pokemon" class="pokedex-column">
-            <h2 class="column-title">Gesehene Pokémon</h2>
-            <div id="seen-list">Lade Daten...</div>
+        
+        <div id="seen-pokemon" class="pokedex-section">
+            <h2 class="section-title">Gesehene Pokémon</h2>
+            <div id="seen-grid" class="pokemon-grid">
+                <div class="empty-message">Lade Daten...</div>
+            </div>
         </div>
     </div>
 
@@ -591,21 +619,21 @@
             }
         };
 
-        // Pokédex-Daten abrufen und in zwei Listen aufteilen
+        // Pokédex-Daten abrufen
         fetch(`/api/pokedex/${username}`)
             .then(response => response.json())
             .then(data => {
-                const caughtList = document.getElementById("caught-list");
-                const seenList = document.getElementById("seen-list");
+                const caughtGrid = document.getElementById("caught-grid");
+                const seenGrid = document.getElementById("seen-grid");
 
                 // Listen leeren
-                caughtList.innerHTML = "";
-                seenList.innerHTML = "";
+                caughtGrid.innerHTML = "";
+                seenGrid.innerHTML = "";
 
                 // Prüfen, ob Daten vorhanden sind
                 if (data.length === 0) {
-                    caughtList.innerHTML = "<p>Keine Pokémon gefunden!</p>";
-                    seenList.innerHTML = "<p>Keine Pokémon gefunden!</p>";
+                    caughtGrid.innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
+                    seenGrid.innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
                     return;
                 }
 
@@ -613,58 +641,58 @@
                 let caughtCount = 0;
                 let seenCount = 0;
 
-                // Daten nach gefangen/gesehen sortieren
-                data.forEach(pokemon => {
-                    const shinyText = pokemon.shiny ? '<span class="shiny">✨Shiny!✨</span>' : "";
-                    const status = pokemon.gefangen 
-                        ? '<span class="caught">◓Gefangen◓</span>' 
-                        : '<span class="not-caught">🞮Nicht gefangen🞮</span>';
-
+                // Daten nach gefangen/gesehen sortieren und nach ID aufsteigend sortieren
+                const sortedData = data.sort((a, b) => a.pokemon_id - b.pokemon_id);
+                
+                // Erstelle die Pokémon-Karten
+                sortedData.forEach(pokemon => {
                     // Formatierung der Pokémon-ID für den Bildpfad
                     const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
                     const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
-
-                    // HTML für den Pokémon-Eintrag erstellen
-                    const pokemonEntry = `
-                        <div class="pokemon">
-                            <div class="pokemon-entry">
-                                <img src="${imageUrl}" alt="${pokemon.pokemon_name}" 
-                                     class="pokemon-image" 
-                                     onclick="openModal(${pokemon.pokemon_id}, '${pokemon.pokemon_name}', '${imageUrl}')">
-                                <div class="pokemon-info">
-                                    #${pokemon.pokemon_id} ${pokemon.pokemon_name} ${shinyText}
-                                </div>
-                            </div>
-                        </div>
+                    
+                    // Shiny-Indikator
+                    const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
+                    
+                    // HTML für die Pokémon-Karte erstellen
+                    const pokemonCard = document.createElement('div');
+                    pokemonCard.className = 'pokemon-card';
+                    pokemonCard.onclick = function() {
+                        openModal(pokemon.pokemon_id, pokemon.pokemon_name, imageUrl);
+                    };
+                    
+                    pokemonCard.innerHTML = `
+                        <img src="${imageUrl}" alt="${pokemon.pokemon_name}" class="pokemon-image">
+                        <div class="pokemon-name">${pokemon.pokemon_name} ${shinyIndicator}</div>
+                        <div class="pokemon-id">#${pokemon.pokemon_id}</div>
                     `;
-
+                    
                     // Je nach Status zur entsprechenden Liste hinzufügen
                     if (pokemon.gefangen) {
-                        caughtList.innerHTML += pokemonEntry;
+                        caughtGrid.appendChild(pokemonCard);
                         caughtCount++;
                     } else {
-                        seenList.innerHTML += pokemonEntry;
+                        seenGrid.appendChild(pokemonCard);
                         seenCount++;
                     }
                 });
 
                 // Wenn eine Liste leer ist, entsprechende Nachricht anzeigen
                 if (caughtCount === 0) {
-                    caughtList.innerHTML = "<p>Keine gefangenen Pokémon!</p>";
+                    caughtGrid.innerHTML = "<div class='empty-message'>Keine gefangenen Pokémon!</div>";
                 }
                 if (seenCount === 0) {
-                    seenList.innerHTML = "<p>Keine gesehenen Pokémon!</p>";
+                    seenGrid.innerHTML = "<div class='empty-message'>Keine gesehenen Pokémon!</div>";
                 }
 
                 // Aktualisiere die Spaltenüberschriften mit der Anzahl
-                document.querySelector("#caught-pokemon .column-title").innerText = 
+                document.querySelector("#caught-pokemon .section-title").innerText = 
                     `Gefangene Pokémon (${caughtCount})`;
-                document.querySelector("#seen-pokemon .column-title").innerText = 
+                document.querySelector("#seen-pokemon .section-title").innerText = 
                     `Gesehene Pokémon (${seenCount})`;
             })
             .catch(error => {
-                document.getElementById("caught-list").innerHTML = "<p>Fehler beim Laden der Daten!</p>";
-                document.getElementById("seen-list").innerHTML = "<p>Fehler beim Laden der Daten!</p>";
+                document.getElementById("caught-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
+                document.getElementById("seen-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
                 console.error("Fehler beim Laden der Pokédex-Daten:", error);
             });
     </script>

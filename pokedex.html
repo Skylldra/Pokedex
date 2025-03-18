@@ -181,9 +181,11 @@
         
         #pokedex-container {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            justify-content: space-between;
             max-width: 1400px;
             margin: auto;
+            gap: 20px;
         }
         
         .pokedex-section {
@@ -191,7 +193,8 @@
             background: rgba(30, 30, 30, 0.8);
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-            margin-bottom: 20px;
+            flex: 1;
+            max-width: 48%;
         }
         
         #caught-pokemon {
@@ -218,7 +221,7 @@
         
         .pokemon-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             justify-content: start;
         }

@@ -15,6 +15,7 @@ const app = express();
 
 // Statische Dateien ausliefern (z.B. pokedex.html)
 app.use(express.static(path.join(__dirname)));
+
 // API-Endpunkt: Pokédex eines Twitch-Users abrufen
 app.get("/api/pokedex/:username", async (req, res) => {
     const username = req.params.username;
@@ -22,10 +23,9 @@ app.get("/api/pokedex/:username", async (req, res) => {
         const result = await sql`
             SELECT pokemon_id, pokemon_name, gefangen, shiny 
             FROM pokedex
-            WHERE twitch_username = ${username}
+            WHERE twitch_username = ${username} OR twitch_username = ${username.toLowerCase()}
             ORDER BY pokemon_id;
         `;
-
         res.json(result);
     } catch (error) {
         console.error("Fehler beim Abrufen des Pokédex:", error);

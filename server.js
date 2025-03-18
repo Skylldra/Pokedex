@@ -20,21 +20,14 @@ app.use(express.static(path.join(__dirname)));
 app.get("/api/pokedex/:username", async (req, res) => {
     const username = req.params.username;
     try {
-        // Debug-Log für Fehlersuche
-        console.log(`Suche nach Pokémon für Benutzer: ${username}`);
-        
+        // Hole alle Einträge, die zum Benutzernamen passen (Original oder Lowercase)
         const result = await sql`
-            SELECT pokemon_id, pokemon_name, gefangen, shiny 
+            SELECT DISTINCT ON (pokemon_id) pokemon_id, pokemon_name, gefangen, shiny 
             FROM pokedex
             WHERE twitch_username = ${username} 
                OR twitch_username = ${username.toLowerCase()}
-               OR twitch_username = ${username.toUpperCase()}
-               OR LOWER(twitch_username) = ${username.toLowerCase()}
-            ORDER BY pokemon_id;
+            ORDER BY pokemon_id, gefangen DESC;
         `;
-        
-        // Debug-Log für die Ergebnisse
-        console.log(`Gefundene Pokémon: ${result.length}`);
         
         res.json(result);
     } catch (error) {

@@ -221,7 +221,7 @@
         
         .pokemon-grid {
             display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            grid-template-columns: repeat(5, 1fr);
             gap: 10px;
             justify-content: start;
         }
@@ -361,21 +361,15 @@
         }
 
         /* Responsive Design für mobile Geräte */
-        @media (max-width: 1400px) {
-            .pokemon-grid {
-                grid-template-columns: repeat(6, 1fr);
-            }
-        }
-        
         @media (max-width: 1200px) {
             .pokemon-grid {
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(4, 1fr);
             }
         }
         
         @media (max-width: 992px) {
             .pokemon-grid {
-                grid-template-columns: repeat(4, 1fr);
+                grid-template-columns: repeat(3, 1fr);
             }
         }
         
@@ -390,17 +384,11 @@
             }
             
             .pokemon-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-        }
-        
-        @media (max-width: 576px) {
-            .pokemon-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
         }
         
-        @media (max-width: 400px) {
+        @media (max-width: 480px) {
             .pokemon-grid {
                 grid-template-columns: repeat(2, 1fr);
             }

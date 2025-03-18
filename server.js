@@ -20,12 +20,11 @@ app.use(express.static(path.join(__dirname)));
 app.get("/api/pokedex/:username", async (req, res) => {
     const username = req.params.username;
     try {
-        // Hole alle Einträge, die zum Benutzernamen passen (Original oder Lowercase)
+        // Hole alle Einträge, die zum Benutzernamen passen, egal welche Groß-/Kleinschreibung
         const result = await sql`
             SELECT DISTINCT ON (pokemon_id) pokemon_id, pokemon_name, gefangen, shiny 
             FROM pokedex
-            WHERE twitch_username = ${username} 
-               OR twitch_username = ${username.toLowerCase()}
+            WHERE LOWER(twitch_username) = LOWER(${username})
             ORDER BY pokemon_id, gefangen DESC;
         `;
         

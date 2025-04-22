@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -409,6 +410,47 @@
             color: #999;
         }
 
+        /* Shiny Counter Styles */
+        .shiny-counter {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(30, 30, 30, 0.8);
+            border-radius: 10px;
+            padding: 10px 15px;
+            border: 3px solid #FFD700; /* Goldene Umrandung */
+            box-shadow: 0px 0px 10px rgba(255, 215, 0, 0.5);
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 120px;
+        }
+
+        .shiny-counter-text {
+            color: #FFD700; /* Goldene Farbe für Text */
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
+        }
+
+        .shiny-counter-value {
+            margin-left: 5px;
+            font-size: 1.2rem;
+            color: white;
+        }
+
+        /* Kleiner Shiny-Funkeln-Effekt */
+        .shiny-sparkle {
+            display: inline-block;
+            animation: sparkle 2s infinite;
+            transform-origin: center;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+        }
+
         /* Responsive Design für mobile Geräte */
         @media (max-width: 1200px) {
             .pokemon-grid {
@@ -435,6 +477,10 @@
             .pokemon-grid {
                 grid-template-columns: repeat(3, 1fr);
             }
+            
+            .shiny-counter {
+                top: 80px; /* Unter dem Titel auf mobilen Geräten */
+            }
         }
         
         @media (max-width: 480px) {
@@ -446,6 +492,14 @@
 </head>
 <body>
     <h1>Pokédex von <span id="username"></span></h1>
+
+    <!-- Shiny Counter -->
+    <div class="shiny-counter">
+        <span class="shiny-counter-text">
+            <span class="shiny-sparkle">✨</span> Shiny <span class="shiny-sparkle">✨</span>: 
+        </span>
+        <span id="shiny-count" class="shiny-counter-value">0</span>
+    </div>
 
     <div class="theme-selector">
         <button id="theme-btn" class="theme-button">Hintergrund ändern</button>
@@ -720,6 +774,17 @@
             }
         };
 
+        // Funktion zum Aktualisieren des Shiny-Counters
+        function updateShinyCounter(pokemonData) {
+            if (!pokemonData || pokemonData.length === 0) return;
+            
+            // Zähle nur gefangene Shinys
+            const shinyCount = pokemonData.filter(pokemon => pokemon.gefangen && pokemon.shiny).length;
+            
+            // Aktualisiere den Counter
+            document.getElementById("shiny-count").innerText = shinyCount;
+        }
+
         // Pokédex-Daten abrufen
         fetch(`/api/pokedex/${username}`)
             .then(response => response.json())
@@ -744,6 +809,9 @@
 
                 // Daten nach gefangen/gesehen sortieren und nach ID aufsteigend sortieren
                 const sortedData = data.sort((a, b) => a.pokemon_id - b.pokemon_id);
+                
+                // Aktualisiere den Shiny-Counter
+                updateShinyCounter(sortedData);
                 
                 // Erstelle die Pokémon-Karten
                 sortedData.forEach(pokemon => {

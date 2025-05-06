@@ -825,7 +825,7 @@
     document.getElementById("shiny-count").innerText = shinyCount;
 }
 
-        // Pokédex-Daten abrufen und verarbeiten
+       // Pokédex-Daten abrufen und verarbeiten
 fetch(`/api/pokedex/${username}`)
     .then(response => response.json())
     .then(data => {
@@ -843,6 +843,9 @@ fetch(`/api/pokedex/${username}`)
             return;
         }
         
+        // Debug-Ausgabe für die Originaldaten
+        console.log("Originaldaten:", data);
+        
         // Dedupliziere die Pokémon-Daten und wähle den besten Status für jede ID
         const uniquePokemon = new Map();
         
@@ -850,6 +853,9 @@ fetch(`/api/pokedex/${username}`)
             const pokemonId = pokemon.pokemon_id;
             const isShiny = pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t";
             const isCaught = pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t";
+            
+            // Debug: Zeige Status für jedes Pokémon
+            console.log(`Pokemon ${pokemon.pokemon_name} (ID: ${pokemonId}): gefangen=${isCaught}, shiny=${isShiny}`);
             
             // Wenn das Pokémon bereits verarbeitet wurde, aktualisiere nur, wenn der Status besser ist
             if (uniquePokemon.has(pokemonId)) {
@@ -861,6 +867,9 @@ fetch(`/api/pokedex/${username}`)
                 // Aktualisiere shiny Status
                 if (isShiny) current.shiny = true;
                 
+                // Debug: Zeige Update
+                console.log(`  - Update für ${pokemon.pokemon_name}: gefangen=${current.gefangen}, shiny=${current.shiny}`);
+                
             } else {
                 // Neues Pokémon mit deduplizierten Statuswerten
                 uniquePokemon.set(pokemonId, {
@@ -869,11 +878,17 @@ fetch(`/api/pokedex/${username}`)
                     gefangen: isCaught,
                     shiny: isShiny
                 });
+                
+                // Debug: Zeige neuen Eintrag
+                console.log(`  - Neu: ${pokemon.pokemon_name}: gefangen=${isCaught}, shiny=${isShiny}`);
             }
         });
         
         // Konvertiere die Map zu einem Array für die Weiterverarbeitung
         const dedupedData = Array.from(uniquePokemon.values());
+        
+        // Debug: Zeige deduplizierte Daten
+        console.log("Deduplizierte Daten:", dedupedData);
         
         // Daten nach ID aufsteigend sortieren
         const sortedData = dedupedData.sort((a, b) => a.pokemon_id - b.pokemon_id);
@@ -887,12 +902,15 @@ fetch(`/api/pokedex/${username}`)
         
         // Erstelle die Pokémon-Karten
         sortedData.forEach(pokemon => {
+            // Debug: Überprüfe jedes Pokémon vor der Anzeige
+            console.log(`Erstelle Karte für ${pokemon.pokemon_name} (ID: ${pokemon.pokemon_id}): gefangen=${pokemon.gefangen}, shiny=${pokemon.shiny}`);
+            
             // Formatierung der Pokémon-ID für den Bildpfad
             const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
             const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
             
-            // Shiny-Indikator
-            const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
+            // Shiny-Indikator - stelle sicher, dass der Wert definitiv als Boolean behandelt wird
+            const shinyIndicator = pokemon.shiny === true ? '<span class="shiny-indicator">✨</span>' : '';
             
             // HTML für die Pokémon-Karte erstellen
             const pokemonCard = document.createElement('div');

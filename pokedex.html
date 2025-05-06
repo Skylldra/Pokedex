@@ -779,7 +779,10 @@
             if (!pokemonData || pokemonData.length === 0) return;
             
             // Zähle nur gefangene Shinys
-            const shinyCount = pokemonData.filter(pokemon => pokemon.gefangen && pokemon.shiny).length;
+            const shinyCount = pokemonData.filter(pokemon => 
+            (pokemon.gefangen === true || pokemon.gefangen === "true") && 
+            (pokemon.shiny === true || pokemon.shiny === "true")
+            ).length;
             
             // Aktualisiere den Counter
             document.getElementById("shiny-count").innerText = shinyCount;

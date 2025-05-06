@@ -776,22 +776,41 @@
 
         // Funktion zum Aktualisieren des Shiny-Counters
         function updateShinyCounter(pokemonData) {
-        if (!pokemonData || pokemonData.length === 0) return;
+    if (!pokemonData || pokemonData.length === 0) return;
     
-        // Sammle alle einzigartigen Pokémon-IDs, die shiny UND gefangen sind
-        const uniqueShinyIds = new Set();
+    // Erstelle ein Objekt, um den besten Status für jede Pokémon-ID zu speichern
+    const bestStatusByPokemonId = {};
     
-        pokemonData.forEach(pokemon => {
-            // Prüfe, ob das Pokémon gefangen und shiny ist
-            if ((pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t") && 
-                (pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t")) {
-                // Füge die ID dem Set hinzu (Sets haben nur einzigartige Werte)
-                uniqueShinyIds.add(pokemon.pokemon_id);
+    // Gehe alle Pokémon durch und behalte nur den "besten" Status für jede ID
+    pokemonData.forEach(pokemon => {
+        const id = pokemon.pokemon_id;
+        const isShiny = pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t";
+        const isCaught = pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t";
+        
+        // Wenn wir diese ID noch nicht gesehen haben, initialisieren
+        if (!bestStatusByPokemonId[id]) {
+            bestStatusByPokemonId[id] = {
+                isCaught: isCaught,
+                isShiny: isShiny
+            };
+        } 
+        // Ansonsten aktualisieren wir nur, wenn der Status besser ist
+        else {
+            // Gefangen ist immer besser als nicht gefangen
+            if (isCaught) {
+                bestStatusByPokemonId[id].isCaught = true;
             }
-        });
+            // Shiny ist immer besser als nicht shiny
+            if (isShiny) {
+                bestStatusByPokemonId[id].isShiny = true;
+            }
+        }
+    });
     
-    // Die Anzahl der einzigartigen IDs ist die Anzahl der gefangenen Shinys
-    const shinyCount = uniqueShinyIds.size;
+    // Zähle jetzt, wie viele einzigartige Pokémon gefangen UND shiny sind
+    const shinyCount = Object.values(bestStatusByPokemonId)
+        .filter(status => status.isCaught && status.isShiny)
+        .length;
     
     // Aktualisiere den Counter
     document.getElementById("shiny-count").innerText = shinyCount;

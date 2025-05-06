@@ -776,16 +776,16 @@
 
         // Funktion zum Aktualisieren des Shiny-Counters
         function updateShinyCounter(pokemonData) {
-            if (!pokemonData || pokemonData.length === 0) return;
-            
-            // Zähle nur gefangene Shinys
-            const shinyCount = pokemonData.filter(pokemon => 
-            (pokemon.gefangen === true || pokemon.gefangen === "true") && 
-            (pokemon.shiny === true || pokemon.shiny === "true")
-            ).length;
-            
-            // Aktualisiere den Counter
-            document.getElementById("shiny-count").innerText = shinyCount;
+        if (!pokemonData || pokemonData.length === 0) return;
+    
+        // Zähle nur gefangene Shinys, berücksichtige verschiedene true-Darstellungen
+        const shinyCount = pokemonData.filter(pokemon => 
+            (pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t") && 
+            (pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t")
+        ).length;
+    
+        // Aktualisiere den Counter
+        document.getElementById("shiny-count").innerText = shinyCount;
         }
 
         // Pokédex-Daten abrufen
@@ -823,7 +823,9 @@
                     const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
                     
                     // Shiny-Indikator
-                    const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
+                    const shinyIndicator = (pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t") 
+                    ? '<span class="shiny-indicator">✨</span>' 
+                    : '';
                     
                     // HTML für die Pokémon-Karte erstellen
                     const pokemonCard = document.createElement('div');

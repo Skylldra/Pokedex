@@ -778,15 +778,24 @@
         function updateShinyCounter(pokemonData) {
         if (!pokemonData || pokemonData.length === 0) return;
     
-        // Zähle nur gefangene Shinys, berücksichtige verschiedene true-Darstellungen
-        const shinyCount = pokemonData.filter(pokemon => 
-            (pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t") && 
-            (pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t")
-        ).length;
+        // Sammle alle einzigartigen Pokémon-IDs, die shiny UND gefangen sind
+        const uniqueShinyIds = new Set();
     
-        // Aktualisiere den Counter
-        document.getElementById("shiny-count").innerText = shinyCount;
-        }
+        pokemonData.forEach(pokemon => {
+            // Prüfe, ob das Pokémon gefangen und shiny ist
+            if ((pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t") && 
+                (pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t")) {
+                // Füge die ID dem Set hinzu (Sets haben nur einzigartige Werte)
+                uniqueShinyIds.add(pokemon.pokemon_id);
+            }
+        });
+    
+    // Die Anzahl der einzigartigen IDs ist die Anzahl der gefangenen Shinys
+    const shinyCount = uniqueShinyIds.size;
+    
+    // Aktualisiere den Counter
+    document.getElementById("shiny-count").innerText = shinyCount;
+}
 
         // Pokédex-Daten abrufen
         fetch(`/api/pokedex/${username}`)
@@ -821,11 +830,10 @@
                     // Formatierung der Pokémon-ID für den Bildpfad
                     const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
                     const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
-                    
-                    // Shiny-Indikator
-                    const shinyIndicator = (pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t") 
-                    ? '<span class="shiny-indicator">✨</span>' 
-                    : '';
+    
+                    // Shiny-Indikator - berücksichtige beide Schreibweisen
+                    const isShiny = pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t";
+                    const shinyIndicator = isShiny ? '<span class="shiny-indicator">✨</span>' : '';
                     
                     // HTML für die Pokémon-Karte erstellen
                     const pokemonCard = document.createElement('div');

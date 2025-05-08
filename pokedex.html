@@ -724,243 +724,341 @@
             }
         });
 
-        // Modal-Funktionen
-        const modal = document.getElementById("pokemonModal");
+// Pokédex-Einträge für die Detailansicht
+let pokedexEntries = {};
 
-        function openModal(pokemonId, pokemonName, imageUrl) {
-            const modalImage = document.getElementById("modalImage");
-            const modalInfo = document.getElementById("modalInfo");
-            const modalDescription = document.getElementById("modalDescription");
-            const modalContent = document.querySelector(".modal-content");
+// Modal-Funktionen
+const modal = document.getElementById("pokemonModal");
 
-            // Setze Bild und Grundinfos
-            modalImage.src = imageUrl;
-            modalImage.alt = pokemonName;
-            modalInfo.innerHTML = `<h2>#${pokemonId} ${pokemonName}</h2>`;
+function openModal(pokemonId, pokemonName, imageUrl) {
+    const modalImage = document.getElementById("modalImage");
+    const modalInfo = document.getElementById("modalInfo");
+    const modalDescription = document.getElementById("modalDescription");
+    const modalContent = document.querySelector(".modal-content");
 
-            // Setze die Beschreibung (wenn verfügbar)
-            if (pokedexEntries[pokemonId]) {
-                modalDescription.innerHTML = pokedexEntries[pokemonId];
+    // Setze Bild und Grundinfos
+    modalImage.src = imageUrl;
+    modalImage.alt = pokemonName;
+    modalInfo.innerHTML = `<h2>#${pokemonId} ${pokemonName}</h2>`;
 
-                // Modal-Größe an Textlänge anpassen
-                // Kurzer Timeout, damit der Text zuerst gerendert wird
-                setTimeout(() => {
-                    const textLength = modalDescription.textContent.length;
-                    const baseWidth = 300; // Mindestbreite
-                    const maxWidth = 600; // Maximale Breite
+    // Setze die Beschreibung (wenn verfügbar)
+    if (pokedexEntries[pokemonId]) {
+        modalDescription.innerHTML = pokedexEntries[pokemonId];
 
-                    // Berechne Breite basierend auf Textlänge
-                    const width = Math.min(baseWidth + textLength * 0.8, maxWidth);
-                    modalContent.style.width = width + "px";
-                }, 50);
-            } else {
-                modalDescription.innerHTML = `<p>Kein Pokédex-Eintrag für ${pokemonName} gefunden.</p>`;
-                modalContent.style.width = "300px"; // Standardbreite für kurzen Text
-            }
+        // Modal-Größe an Textlänge anpassen
+        // Kurzer Timeout, damit der Text zuerst gerendert wird
+        setTimeout(() => {
+            const textLength = modalDescription.textContent.length;
+            const baseWidth = 300; // Mindestbreite
+            const maxWidth = 600; // Maximale Breite
 
-            // Zeige Modal
-            modal.style.display = "block";
-        }
-
-        function closeModal() {
-            modal.style.display = "none";
-        }
-
-        // Schließe Modal, wenn außerhalb geklickt wird
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeModal();
-            }
-        };
-
-        // Funktion zum Aktualisieren des Shiny-Counters
-        function updateShinyCounter(pokemonData) {
-            if (!pokemonData || pokemonData.length === 0) return;
-
-            // Zähle nur gefangene Shinys
-            const shinyCount = pokemonData.filter(pokemon => 
-            (pokemon.gefangen === true || pokemon.gefangen === "true") && 
-            (pokemon.shiny === true || pokemon.shiny === "true")
-            ).length;
-
-            // Aktualisiere den Counter
-            document.getElementById("shiny-count").innerText = shinyCount;
-        }
-
-        // Pokédex-Daten abrufen - verbesserte Version für beide Namensschreibweisen
-async function fetchAndDisplayPokedex() {
-    try {
-        // Beide Schreibweisen des Benutzernamens
-        const usernameLower = username.toLowerCase();
-        
-        // Lade Daten von beiden Endpunkten
-        let combinedData = [];
-        
-        // Erster Abruf für normale Schreibweise
-        try {
-            const response1 = await fetch(`/api/pokedex/${username}`);
-            const data1 = await response1.json();
-            combinedData = [...combinedData, ...data1];
-            console.log(`Daten für ${username} geladen: ${data1.length} Einträge`);
-        } catch (error) {
-            console.error(`Fehler beim Laden der Daten für ${username}:`, error);
-        }
-        
-        // Zweiter Abruf für Kleinbuchstaben
-        try {
-            const response2 = await fetch(`/api/pokedex/${usernameLower}`);
-            const data2 = await response2.json();
-            combinedData = [...combinedData, ...data2];
-            console.log(`Daten für ${usernameLower} geladen: ${data2.length} Einträge`);
-        } catch (error) {
-            console.error(`Fehler beim Laden der Daten für ${usernameLower}:`, error);
-        }
-        
-        const caughtGrid = document.getElementById("caught-grid");
-        const seenGrid = document.getElementById("seen-grid");
-
-        // Listen leeren
-        caughtGrid.innerHTML = "";
-        seenGrid.innerHTML = "";
-
-        // Prüfen, ob Daten vorhanden sind
-        if (combinedData.length === 0) {
-            caughtGrid.innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
-            seenGrid.innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
-            return;
-        }
-        
-        // Debug: Alle Einträge anzeigen
-        console.log("Alle geladenen Pokémon:", combinedData);
-        
-        // Dedupliziere die Daten und wähle die beste Version für jedes Pokémon
-        const uniquePokemon = new Map();
-        
-        combinedData.forEach(pokemon => {
-            const id = pokemon.pokemon_id;
-            // Explizit Strings in Booleans umwandeln
-            const isShiny = pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t";
-            const isCaught = pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t";
-            
-            // Wenn wir dieses Pokémon bereits gesehen haben
-            if (uniquePokemon.has(id)) {
-                const existing = uniquePokemon.get(id);
-                const existingIsShiny = existing.shiny;
-                
-                // WICHTIG: Bevorzuge IMMER die shiny-Version
-                if (isShiny) {
-                    // Wenn die neue Version shiny ist, aktualisiere auf jeden Fall
-                    existing.shiny = true;
-                    // Wenn die shiny-Version auch gefangen ist, bevorzuge gefangen
-                    if (isCaught) existing.gefangen = true;
-                } 
-                // Nur wenn die vorhandene Version NICHT shiny ist, prüfe andere Kriterien
-                else if (!existingIsShiny) {
-                    // Bevorzuge gefangen über nicht gefangen
-                    if (isCaught) existing.gefangen = true;
-                }
-                
-                // Debug: Zeige Update
-                console.log(`Update für ${pokemon.pokemon_name} (ID: ${id}): gefangen=${existing.gefangen}, shiny=${existing.shiny}`);
-            } else {
-                // Neuen Eintrag erstellen
-                uniquePokemon.set(id, {
-                    pokemon_id: id,
-                    pokemon_name: pokemon.pokemon_name,
-                    gefangen: isCaught,
-                    shiny: isShiny
-                });
-                
-                // Debug: Zeige neuen Eintrag
-                console.log(`Neu: ${pokemon.pokemon_name} (ID: ${id}): gefangen=${isCaught}, shiny=${isShiny}`);
-            }
-        });
-        
-        // Map in Array umwandeln
-        const dedupedData = Array.from(uniquePokemon.values());
-        
-        // Debug: Zeige deduplizierte Daten
-        console.log("Deduplizierte Daten:", dedupedData);
-        
-        // Nach ID sortieren
-        const sortedData = dedupedData.sort((a, b) => a.pokemon_id - b.pokemon_id);
-        
-        // Shiny-Counter aktualisieren - nur eindeutige gezählte Pokémon
-        updateShinyCounter(sortedData);
-        
-        // Zähler für gefangene und gesehene Pokémon
-        let caughtCount = 0;
-        let seenCount = 0;
-
-        // Erstelle die Pokémon-Karten
-        sortedData.forEach(pokemon => {
-            // Formatierung der Pokémon-ID für den Bildpfad
-            const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
-            const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
-
-            // WICHTIG: Korrekte Shiny-Anzeige
-            const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
-
-            // HTML für die Pokémon-Karte erstellen
-            const pokemonCard = document.createElement('div');
-            pokemonCard.className = 'pokemon-card';
-            pokemonCard.onclick = function() {
-                openModal(pokemon.pokemon_id, pokemon.pokemon_name, imageUrl);
-            };
-
-            pokemonCard.innerHTML = `
-                <img src="${imageUrl}" alt="${pokemon.pokemon_name}" class="pokemon-image">
-                <div class="pokemon-name">${pokemon.pokemon_name} ${shinyIndicator}</div>
-                <div class="pokemon-id">#${pokemon.pokemon_id}</div>
-            `;
-
-            // Je nach Status zur entsprechenden Liste hinzufügen
-            if (pokemon.gefangen) {
-                caughtGrid.appendChild(pokemonCard);
-                caughtCount++;
-            } else {
-                seenGrid.appendChild(pokemonCard);
-                seenCount++;
-            }
-        });
-
-        // Wenn eine Liste leer ist, entsprechende Nachricht anzeigen
-        if (caughtCount === 0) {
-            caughtGrid.innerHTML = "<div class='empty-message'>Keine gefangenen Pokémon!</div>";
-        }
-        if (seenCount === 0) {
-            seenGrid.innerHTML = "<div class='empty-message'>Keine gesehenen Pokémon!</div>";
-        }
-
-        // Aktualisiere die Spaltenüberschriften mit der Anzahl
-        document.querySelector("#caught-pokemon .section-title").innerText = 
-            `Gefangene Pokémon (${caughtCount})`;
-        document.querySelector("#seen-pokemon .section-title").innerText = 
-            `Gesehene Pokémon (${seenCount})`;
-    } catch (error) {
-        document.getElementById("caught-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
-        document.getElementById("seen-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
-        console.error("Fehler beim Laden der Pokédex-Daten:", error);
+            // Berechne Breite basierend auf Textlänge
+            const width = Math.min(baseWidth + textLength * 0.8, maxWidth);
+            modalContent.style.width = width + "px";
+        }, 50);
+    } else {
+        modalDescription.innerHTML = `<p>Kein Pokédex-Eintrag für ${pokemonName} gefunden.</p>`;
+        modalContent.style.width = "300px"; // Standardbreite für kurzen Text
     }
+
+    // Zeige Modal
+    modal.style.display = "block";
 }
 
-// Shiny Counter aktualisieren
+function closeModal() {
+    modal.style.display = "none";
+}
+
+// Schließe Modal, wenn außerhalb geklickt wird
+window.onclick = function(event) {
+    if (event.target == modal) {
+        closeModal();
+    }
+};
+
+// Funktion zum Aktualisieren des Shiny-Counters
 function updateShinyCounter(pokemonData) {
     if (!pokemonData || pokemonData.length === 0) return;
     
-    // Zähle nur gefangene Shinys
+    // Zähle nur gefangene Shinys - nur eindeutige IDs
     const shinyCount = pokemonData.filter(pokemon => pokemon.gefangen && pokemon.shiny).length;
     
     // Aktualisiere den Counter
     document.getElementById("shiny-count").innerText = shinyCount;
 }
 
-// Dann füge diesen Code am Ende des bestehenden onDOMContentLoaded-Event-Handlers hinzu
-document.addEventListener('DOMContentLoaded', function() {
-    // Restlicher Code...
+// Pokédex-Daten laden und anzeigen
+async function loadPokedex() {
+    try {
+        // Beide Schreibweisen des Benutzernamens
+        const usernameLower = username.toLowerCase();
+        
+        // Erstelle einen Satz verfügbarer Benutzernamen zum Abfragen
+        const usernames = new Set([username, usernameLower]);
+        
+        let allPokemon = [];
+        
+        // Für jeden verfügbaren Benutzernamen Daten abrufen
+        for (const user of usernames) {
+            try {
+                const response = await fetch(`/api/pokedex/${user}`);
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    console.log(`Daten für ${user} geladen: ${data.length} Einträge`);
+                    allPokemon = [...allPokemon, ...data];
+                }
+            } catch (error) {
+                console.error(`Fehler beim Laden der Daten für ${user}:`, error);
+            }
+        }
+        
+        if (allPokemon.length === 0) {
+            document.getElementById("caught-grid").innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
+            document.getElementById("seen-grid").innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
+            return;
+        }
+        
+        console.log(`Insgesamt ${allPokemon.length} Pokémon-Datensätze geladen`);
+        
+        // Dedupliziere Pokémon und bevorzuge Shinys
+        const bestPokemon = new Map();
+        
+        // Erste Phase: Alle Pokémon sammeln
+        allPokemon.forEach(pokemon => {
+            // Typenkonvertierung für konsistenten Vergleich
+            const isShiny = pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t";
+            const isCaught = pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t";
+            
+            // ID als Schlüssel verwenden
+            const id = pokemon.pokemon_id;
+            
+            if (bestPokemon.has(id)) {
+                // Wenn dieses Pokémon bereits existiert
+                const existing = bestPokemon.get(id);
+                
+                // KRITISCH: Bevorzugungsregeln
+                
+                // REGEL 1: Shiny hat höchste Priorität - wenn das neue Pokemon shiny ist, immer aktualisieren
+                if (isShiny && !existing.shiny) {
+                    // Shiny gewinnt immer, übernimm auch gefangen-Status
+                    existing.shiny = true;
+                    existing.gefangen = isCaught;
+                    console.log(`${pokemon.pokemon_name} #${id}: Shiny-Version bevorzugt über nicht-Shiny`);
+                }
+                // REGEL 2: Wenn beide shiny sind, wähle den gefangenen
+                else if (isShiny && existing.shiny && isCaught && !existing.gefangen) {
+                    existing.gefangen = true;
+                    console.log(`${pokemon.pokemon_name} #${id}: Gefangene Shiny-Version bevorzugt`);
+                }
+                // REGEL 3: Wenn beide nicht shiny sind, bevorzuge gefangen
+                else if (!isShiny && !existing.shiny && isCaught && !existing.gefangen) {
+                    existing.gefangen = true;
+                    console.log(`${pokemon.pokemon_name} #${id}: Gefangene Version bevorzugt (beide nicht shiny)`);
+                }
+            } else {
+                // Wenn noch nicht in der Map, einfach hinzufügen
+                bestPokemon.set(id, {
+                    pokemon_id: id,
+                    pokemon_name: pokemon.pokemon_name,
+                    gefangen: isCaught,
+                    shiny: isShiny
+                });
+            }
+        });
+        
+        // Konvertiere die Map zu einem Array und sortiere nach ID
+        const uniquePokemon = Array.from(bestPokemon.values())
+            .sort((a, b) => a.pokemon_id - b.pokemon_id);
+        
+        console.log(`Nach Deduplizierung: ${uniquePokemon.length} einzigartige Pokémon`);
+        
+        // Debug: Alle Shinys anzeigen
+        const shinys = uniquePokemon.filter(p => p.shiny);
+        console.log(`Gefundene Shinys: ${shinys.length}`, shinys);
+        
+        // Aktualisiere den Shiny-Counter
+        updateShinyCounter(uniquePokemon);
+        
+        // Pokémon anzeigen
+        displayPokemon(uniquePokemon);
+    } catch (error) {
+        console.error("Fehler beim Laden des Pokédex:", error);
+        document.getElementById("caught-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
+        document.getElementById("seen-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
+    }
+}
+
+// Pokémon-Karten anzeigen
+function displayPokemon(pokemonData) {
+    const caughtGrid = document.getElementById("caught-grid");
+    const seenGrid = document.getElementById("seen-grid");
     
-    // Starte das Laden der Daten
-    fetchAndDisplayPokedex();
+    // Grids leeren
+    caughtGrid.innerHTML = "";
+    seenGrid.innerHTML = "";
+    
+    let caughtCount = 0;
+    let seenCount = 0;
+    
+    // Für jedes Pokémon eine Karte erstellen
+    pokemonData.forEach(pokemon => {
+        // Formatierung der Pokémon-ID für den Bildpfad
+        const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
+        const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
+        
+        // Shiny-Indikator
+        const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
+        
+        // Debug: Log für jede Karte
+        console.log(`Erstelle Karte für ${pokemon.pokemon_name} #${pokemon.pokemon_id}: gefangen=${pokemon.gefangen}, shiny=${pokemon.shiny}`);
+        
+        const card = document.createElement('div');
+        card.className = 'pokemon-card';
+        card.onclick = function() {
+            openModal(pokemon.pokemon_id, pokemon.pokemon_name, imageUrl);
+        };
+        
+        card.innerHTML = `
+            <img src="${imageUrl}" alt="${pokemon.pokemon_name}" class="pokemon-image">
+            <div class="pokemon-name">${pokemon.pokemon_name} ${shinyIndicator}</div>
+            <div class="pokemon-id">#${pokemon.pokemon_id}</div>
+        `;
+        
+        // Je nach Status zur entsprechenden Liste hinzufügen
+        if (pokemon.gefangen) {
+            caughtGrid.appendChild(card);
+            caughtCount++;
+        } else {
+            seenGrid.appendChild(card);
+            seenCount++;
+        }
+    });
+    
+    // Wenn eine Liste leer ist, entsprechende Nachricht anzeigen
+    if (caughtCount === 0) {
+        caughtGrid.innerHTML = "<div class='empty-message'>Keine gefangenen Pokémon!</div>";
+    }
+    if (seenCount === 0) {
+        seenGrid.innerHTML = "<div class='empty-message'>Keine gesehenen Pokémon!</div>";
+    }
+    
+    // Aktualisiere die Spaltenüberschriften mit der Anzahl
+    document.querySelector("#caught-pokemon .section-title").innerText = 
+        `Gefangene Pokémon (${caughtCount})`;
+    document.querySelector("#seen-pokemon .section-title").innerText = 
+        `Gesehene Pokémon (${seenCount})`;
+}
+
+// Lade Theme-Funktionalität und Pokédex, wenn die Seite geladen ist
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme-Selector-Elemente initialisieren
+    const themeBtn = document.getElementById('theme-btn');
+    const themeDropdown = document.getElementById('theme-dropdown');
+    const themeOptions = document.querySelectorAll('.theme-option');
+    const customUpload = document.getElementById('custom-bg-upload');
+    const customUploadOption = document.querySelector('.theme-option.custom-upload');
+
+    // Klick auf die Upload-Option leitet zum Datei-Input weiter
+    customUploadOption.addEventListener('click', function() {
+        customUpload.click();
+    });
+
+    // Gespeichertes Theme laden
+    loadSavedTheme();
+
+    // Toggle Dropdown ein/aus
+    themeBtn.addEventListener('click', function() {
+        themeDropdown.classList.toggle('active');
+    });
+
+    // Schließe Dropdown wenn woanders geklickt wird
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.theme-selector')) {
+            themeDropdown.classList.remove('active');
+        }
+    });
+
+    // Theme-Option auswählen
+    themeOptions.forEach(option => {
+        if (!option.classList.contains('custom-upload')) {
+            option.addEventListener('click', function() {
+                const theme = this.getAttribute('data-theme');
+                setTheme(theme);
+                saveTheme(theme);
+                themeDropdown.classList.remove('active');
+            });
+        }
+    });
+
+    // Eigenes Bild hochladen
+    customUpload.addEventListener('change', function(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const customBg = e.target.result;
+                document.body.style.backgroundImage = `url(${customBg})`;
+                document.body.className = 'theme-custom';
+                saveCustomBackground(customBg);
+                themeDropdown.classList.remove('active');
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Theme aus dem localStorage laden
+    function loadSavedTheme() {
+        const savedTheme = localStorage.getItem('pokedexTheme');
+        if (savedTheme) {
+            if (savedTheme === 'custom') {
+                const customBg = localStorage.getItem('pokedexCustomBg');
+                if (customBg) {
+                    document.body.style.backgroundImage = `url(${customBg})`;
+                    document.body.className = 'theme-custom';
+                } else {
+                    setTheme('dark'); // Standard-Theme falls custom-Daten fehlen
+                }
+            } else {
+                setTheme(savedTheme);
+            }
+        } else {
+            setTheme('dark'); // Standard-Theme wenn noch keins gewählt wurde
+        }
+    }
+
+    // Theme setzen
+    function setTheme(theme) {
+        document.body.className = '';
+        document.body.style.backgroundImage = '';
+        document.body.classList.add('theme-' + theme);
+    }
+
+    // Theme im localStorage speichern
+    function saveTheme(theme) {
+        localStorage.setItem('pokedexTheme', theme);
+    }
+
+    // Eigenes Hintergrundbild im localStorage speichern
+    function saveCustomBackground(customBg) {
+        localStorage.setItem('pokedexTheme', 'custom');
+        localStorage.setItem('pokedexCustomBg', customBg);
+    }
+
+    // Lade die Pokédex-Einträge, dann starte die Anzeige
+    fetch('/pokedexeintrag.json')
+        .then(response => response.json())
+        .then(data => {
+            pokedexEntries = data;
+            console.log("Pokédex-Einträge geladen");
+            // Pokédex-Daten laden
+            loadPokedex();
+        })
+        .catch(error => {
+            console.error('Fehler beim Laden der Pokédex-Einträge:', error);
+            // Trotzdem versuchen, den Pokédex zu laden
+            loadPokedex();
+        });
 });
     </script>
 </body>

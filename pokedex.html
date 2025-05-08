@@ -806,16 +806,14 @@ async function fetchAndDisplayPokedex() {
             console.error(`Fehler beim Laden der Daten für ${username}:`, error);
         }
         
-        // Zweiter Abruf für Kleinbuchstaben, falls unterschiedlich
-        if (username !== usernameLower) {
-            try {
-                const response2 = await fetch(`/api/pokedex/${usernameLower}`);
-                const data2 = await response2.json();
-                combinedData = [...combinedData, ...data2];
-                console.log(`Daten für ${usernameLower} geladen: ${data2.length} Einträge`);
-            } catch (error) {
-                console.error(`Fehler beim Laden der Daten für ${usernameLower}:`, error);
-            }
+        // Zweiter Abruf für Kleinbuchstaben
+        try {
+            const response2 = await fetch(`/api/pokedex/${usernameLower}`);
+            const data2 = await response2.json();
+            combinedData = [...combinedData, ...data2];
+            console.log(`Daten für ${usernameLower} geladen: ${data2.length} Einträge`);
+        } catch (error) {
+            console.error(`Fehler beim Laden der Daten für ${usernameLower}:`, error);
         }
         
         const caughtGrid = document.getElementById("caught-grid");
@@ -832,6 +830,9 @@ async function fetchAndDisplayPokedex() {
             return;
         }
         
+        // Debug: Alle Einträge anzeigen
+        console.log("Alle geladenen Pokémon:", combinedData);
+        
         // Dedupliziere die Daten und wähle die beste Version für jedes Pokémon
         const uniquePokemon = new Map();
         
@@ -844,9 +845,23 @@ async function fetchAndDisplayPokedex() {
             // Wenn wir dieses Pokémon bereits gesehen haben
             if (uniquePokemon.has(id)) {
                 const existing = uniquePokemon.get(id);
-                // Aktualisiere den Status - bevorzuge gefangen und shiny
-                if (isCaught) existing.gefangen = true;
-                if (isShiny) existing.shiny = true;
+                const existingIsShiny = existing.shiny;
+                
+                // WICHTIG: Bevorzuge IMMER die shiny-Version
+                if (isShiny) {
+                    // Wenn die neue Version shiny ist, aktualisiere auf jeden Fall
+                    existing.shiny = true;
+                    // Wenn die shiny-Version auch gefangen ist, bevorzuge gefangen
+                    if (isCaught) existing.gefangen = true;
+                } 
+                // Nur wenn die vorhandene Version NICHT shiny ist, prüfe andere Kriterien
+                else if (!existingIsShiny) {
+                    // Bevorzuge gefangen über nicht gefangen
+                    if (isCaught) existing.gefangen = true;
+                }
+                
+                // Debug: Zeige Update
+                console.log(`Update für ${pokemon.pokemon_name} (ID: ${id}): gefangen=${existing.gefangen}, shiny=${existing.shiny}`);
             } else {
                 // Neuen Eintrag erstellen
                 uniquePokemon.set(id, {
@@ -855,16 +870,22 @@ async function fetchAndDisplayPokedex() {
                     gefangen: isCaught,
                     shiny: isShiny
                 });
+                
+                // Debug: Zeige neuen Eintrag
+                console.log(`Neu: ${pokemon.pokemon_name} (ID: ${id}): gefangen=${isCaught}, shiny=${isShiny}`);
             }
         });
         
         // Map in Array umwandeln
         const dedupedData = Array.from(uniquePokemon.values());
         
+        // Debug: Zeige deduplizierte Daten
+        console.log("Deduplizierte Daten:", dedupedData);
+        
         // Nach ID sortieren
         const sortedData = dedupedData.sort((a, b) => a.pokemon_id - b.pokemon_id);
         
-        // Shiny-Counter aktualisieren
+        // Shiny-Counter aktualisieren - nur eindeutige gezählte Pokémon
         updateShinyCounter(sortedData);
         
         // Zähler für gefangene und gesehene Pokémon
@@ -877,7 +898,7 @@ async function fetchAndDisplayPokedex() {
             const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
             const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
 
-            // WICHTIG: Expliziter Vergleich für Shiny-Anzeige
+            // WICHTIG: Korrekte Shiny-Anzeige
             const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
 
             // HTML für die Pokémon-Karte erstellen
@@ -923,11 +944,22 @@ async function fetchAndDisplayPokedex() {
     }
 }
 
+// Shiny Counter aktualisieren
+function updateShinyCounter(pokemonData) {
+    if (!pokemonData || pokemonData.length === 0) return;
+    
+    // Zähle nur gefangene Shinys
+    const shinyCount = pokemonData.filter(pokemon => pokemon.gefangen && pokemon.shiny).length;
+    
+    // Aktualisiere den Counter
+    document.getElementById("shiny-count").innerText = shinyCount;
+}
+
 // Dann füge diesen Code am Ende des bestehenden onDOMContentLoaded-Event-Handlers hinzu
 document.addEventListener('DOMContentLoaded', function() {
-    // Dein vorhandener Theme-Code bleibt hier unverändert...
+    // Restlicher Code...
     
-    // Lade die Pokédex-Daten
+    // Starte das Laden der Daten
     fetchAndDisplayPokedex();
 });
     </script>

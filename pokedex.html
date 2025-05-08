@@ -798,6 +798,9 @@ fetch(`/api/pokedex/${username}`)
         caughtGrid.innerHTML = "";
         seenGrid.innerHTML = "";
 
+        // Debug: Originaldaten ausgeben
+        console.log("Originale Daten:", JSON.stringify(data));
+
         // Prüfen, ob Daten vorhanden sind
         if (data.length === 0) {
             caughtGrid.innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
@@ -805,29 +808,111 @@ fetch(`/api/pokedex/${username}`)
             return;
         }
 
-        // Bereinige Daten, um doppelte Pokémon zu entfernen (Shiny bevorzugt)
-        const processedData = [];
-        const seenPokemon = new Map(); // Map zum Speichern bereits verarbeiteter Pokémon-IDs
+        // Normalisiere die Feldnamen, falls sie variieren könnten
+        data = data.map(pokemon => {
+            // Stelle sicher, dass alle Felder konsistent sind
+            return {
+                pokemon_id: pokemon.pokemon_id,
+                pokemon_name: pokemon.pokemon_name,
+                twitch_username: pokemon.twitch_username || "",  // Fallback falls nicht vorhanden
+                gefangen: typeof pokemon.gefangen === 'boolean' ? pokemon.gefangen : 
+                          (pokemon.gefangen === 'true' || pokemon.gefangen === 't'),
+                shiny: typeof pokemon.shiny === 'boolean' ? pokemon.shiny : 
+                       (pokemon.shiny === 'true' || pokemon.shiny === 't')
+            };
+        });
 
-        // Erste Durchlauf: Sammel alle Pokémon und bevorzuge Shinys
+        // Debug: Normalisierte Daten
+        console.log("Normalisierte Daten:", JSON.stringify(data));
+
+        // Finde speziell Dragoran mit ID 149 zum Debugging
+        const dragoniteEntries = data.filter(p => p.pokemon_id === 149);
+        console.log("Dragoran Einträge:", dragoniteEntries);
+
+        // Normalisiere zuerst alle Nutzernamen auf die gleiche Schreibweise (lowercase)
+        // und kombiniere doppelte Einträge vom gleichen Benutzer (unterschiedliche Schreibweise)
+        const userPokemonMap = new Map();
+
+        // Gruppiere Pokémon nach Benutzer (Case-insensitive) und Pokémon-ID
         data.forEach(pokemon => {
-            const key = pokemon.pokemon_id.toString();
+            // Nutze lowercase username und pokemon_id als Schlüssel
+            const lowercaseUsername = pokemon.twitch_username ? pokemon.twitch_username.toLowerCase() : '';
+            const key = `${lowercaseUsername}-${pokemon.pokemon_id}`;
             
-            // Wenn dieses Pokémon bereits gesehen wurde
-            if (seenPokemon.has(key)) {
-                const existingPokemon = seenPokemon.get(key);
+            console.log(`Verarbeite Pokemon: ${pokemon.pokemon_name} (ID: ${pokemon.pokemon_id}) von ${pokemon.twitch_username}`);
+            console.log(`  - gefangen: ${pokemon.gefangen}, shiny: ${pokemon.shiny}`);
+            console.log(`  - key: ${key}`);
+            
+            if (userPokemonMap.has(key)) {
+                const existingEntry = userPokemonMap.get(key);
+                console.log(`  - Existierender Eintrag gefunden für ${key}`);
+                console.log(`  - Existierender Eintrag: gefangen=${existingEntry.gefangen}, shiny=${existingEntry.shiny}`);
                 
-                // Wenn das aktuelle Pokemon shiny ist und das existierende nicht,
-                // oder wenn beide shiny sind und das aktuelle gefangen wurde
-                if ((pokemon.shiny && !existingPokemon.shiny) ||
-                    (pokemon.shiny && existingPokemon.shiny && pokemon.gefangen && !existingPokemon.gefangen)) {
-                    seenPokemon.set(key, pokemon);
+                // Wenn es ein neuer Eintrag mit shiny=true ist, aktualisiere den bestehenden Eintrag
+                if (pokemon.shiny && !existingEntry.shiny) {
+                    console.log(`  - Update: shiny von ${existingEntry.shiny} zu ${pokemon.shiny}`);
+                    existingEntry.shiny = true;
+                }
+                
+                // Wenn es ein neuer Eintrag mit gefangen=true ist, aktualisiere den bestehenden Eintrag
+                if (pokemon.gefangen && !existingEntry.gefangen) {
+                    console.log(`  - Update: gefangen von ${existingEntry.gefangen} zu ${pokemon.gefangen}`);
+                    existingEntry.gefangen = true;
                 }
             } else {
-                // Neues Pokémon zur Map hinzufügen
-                seenPokemon.set(key, pokemon);
+                // Neuer Eintrag - kopiere das Pokémon-Objekt (um es nicht zu verändern)
+                console.log(`  - Neuer Eintrag für ${key}`);
+                userPokemonMap.set(key, { ...pokemon });
             }
         });
+
+        // Debug: userPokemonMap Zwischenzustand
+        console.log("Benutzer-Pokemon Map:", Array.from(userPokemonMap.entries()));
+
+        // Speziell für Dragoran prüfen
+        const dragoniteMapEntries = Array.from(userPokemonMap.entries())
+            .filter(([key]) => key.includes('-149'));
+        console.log("Dragoran in der Map:", dragoniteMapEntries);
+
+        // Jetzt sammle alle eindeutigen Pokémon und bevorzuge Shinys
+        const seenPokemon = new Map();
+
+        // Verarbeite die zusammengeführten Benutzer-Pokémon
+        userPokemonMap.forEach((pokemon, key) => {
+            const pokemonKey = pokemon.pokemon_id.toString();
+            
+            console.log(`Verarbeite kombiniertes Pokemon: ${pokemon.pokemon_name} (ID: ${pokemon.pokemon_id})`);
+            console.log(`  - gefangen: ${pokemon.gefangen}, shiny: ${pokemon.shiny}`);
+            
+            // Wenn dieses Pokémon bereits gesehen wurde
+            if (seenPokemon.has(pokemonKey)) {
+                const existingPokemon = seenPokemon.get(pokemonKey);
+                console.log(`  - Existierender Eintrag in seen Map: ${existingPokemon.pokemon_name}`);
+                console.log(`  - Existing: gefangen=${existingPokemon.gefangen}, shiny=${existingPokemon.shiny}`);
+                
+                // Priorisiere: 1. Shiny gefangen, 2. Normal gefangen, 3. Shiny gesehen, 4. Normal gesehen
+                const currentPriority = (pokemon.shiny ? 2 : 0) + (pokemon.gefangen ? 1 : 0);
+                const existingPriority = (existingPokemon.shiny ? 2 : 0) + (existingPokemon.gefangen ? 1 : 0);
+                
+                console.log(`  - Priorität: Aktuell=${currentPriority}, Existierend=${existingPriority}`);
+                
+                if (currentPriority > existingPriority) {
+                    console.log(`  - Ersetze mit höherer Priorität!`);
+                    seenPokemon.set(pokemonKey, pokemon);
+                }
+            } else {
+                // Neues Pokémon hinzufügen
+                console.log(`  - Neuer Eintrag in seen Map`);
+                seenPokemon.set(pokemonKey, pokemon);
+            }
+        });
+
+        // Debug: Finale Map
+        console.log("Finale Pokemon Map:", Array.from(seenPokemon.entries()));
+
+        // Speziell für Dragoran prüfen
+        const finalDragonite = seenPokemon.get('149');
+        console.log("Finaler Dragoran Eintrag:", finalDragonite);
 
         // Konvertiere die Map-Werte zurück in ein Array
         const uniqueData = Array.from(seenPokemon.values());
@@ -844,12 +929,23 @@ fetch(`/api/pokedex/${username}`)
 
         // Erstelle die Pokémon-Karten
         sortedData.forEach(pokemon => {
+            // Debug für Dragoran
+            if (pokemon.pokemon_id === 149) {
+                console.log("Dragoran beim Rendern:", pokemon);
+                console.log("Shiny-Status:", pokemon.shiny);
+            }
+            
             // Formatierung der Pokémon-ID für den Bildpfad
             const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
             const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
 
             // Shiny-Indikator
             const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
+            
+            // Debug für Shiny-Indikator bei Dragoran
+            if (pokemon.pokemon_id === 149) {
+                console.log("Dragoran Shiny-Indikator:", shinyIndicator);
+            }
 
             // HTML für die Pokémon-Karte erstellen
             const pokemonCard = document.createElement('div');

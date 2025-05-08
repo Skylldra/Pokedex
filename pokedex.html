@@ -825,10 +825,33 @@
     document.getElementById("shiny-count").innerText = shinyCount;
 }
 
-       // Pokédex-Daten abrufen und verarbeiten
-fetch(`/api/pokedex/${username}`)
-    .then(response => response.json())
-    .then(data => {
+       // Pokédex-Daten abrufen - verbesserte Version, die beide Schreibweisen berücksichtigt
+async function fetchAndDisplayPokedex() {
+    try {
+        // Hole Daten für den aktuellen Benutzernamen
+        const username = path[path.length - 1];
+        const usernameLower = username.toLowerCase();
+        
+        // Nur wenn sich die Schreibweisen unterscheiden, machen wir zwei Abfragen
+        let combinedData = [];
+        
+        if (username !== usernameLower) {
+            // Hole Daten für beide Schreibweisen
+            const response1 = await fetch(`/api/pokedex/${username}`);
+            const data1 = await response1.json();
+            
+            const response2 = await fetch(`/api/pokedex/${usernameLower}`);
+            const data2 = await response2.json();
+            
+            combinedData = [...data1, ...data2];
+            console.log(`Daten geladen: ${data1.length} für ${username}, ${data2.length} für ${usernameLower}`);
+        } else {
+            // Nur eine Abfrage, wenn die Schreibweisen identisch sind
+            const response = await fetch(`/api/pokedex/${username}`);
+            combinedData = await response.json();
+            console.log(`Daten geladen: ${combinedData.length} für ${username}`);
+        }
+        
         const caughtGrid = document.getElementById("caught-grid");
         const seenGrid = document.getElementById("seen-grid");
 
@@ -837,19 +860,19 @@ fetch(`/api/pokedex/${username}`)
         seenGrid.innerHTML = "";
 
         // Prüfen, ob Daten vorhanden sind
-        if (data.length === 0) {
+        if (combinedData.length === 0) {
             caughtGrid.innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
             seenGrid.innerHTML = "<div class='empty-message'>Keine Pokémon gefunden!</div>";
             return;
         }
         
         // Debug-Ausgabe für die Originaldaten
-        console.log("Originaldaten:", data);
+        console.log("Originaldaten:", combinedData);
         
         // Dedupliziere die Pokémon-Daten und wähle den besten Status für jede ID
         const uniquePokemon = new Map();
         
-        data.forEach(pokemon => {
+        combinedData.forEach(pokemon => {
             const pokemonId = pokemon.pokemon_id;
             const isShiny = pokemon.shiny === true || pokemon.shiny === "true" || pokemon.shiny === "t";
             const isCaught = pokemon.gefangen === true || pokemon.gefangen === "true" || pokemon.gefangen === "t";
@@ -909,8 +932,8 @@ fetch(`/api/pokedex/${username}`)
             const paddedId = pokemon.pokemon_id.toString().padStart(3, '0');
             const imageUrl = `https://raw.githubusercontent.com/Skylldra/PokemonCatch/main/Pokedex/${paddedId}.png`;
             
-            // Shiny-Indikator - stelle sicher, dass der Wert definitiv als Boolean behandelt wird
-            const shinyIndicator = pokemon.shiny === true ? '<span class="shiny-indicator">✨</span>' : '';
+            // Shiny-Indikator
+            const shinyIndicator = pokemon.shiny ? '<span class="shiny-indicator">✨</span>' : '';
             
             // HTML für die Pokémon-Karte erstellen
             const pokemonCard = document.createElement('div');
@@ -948,12 +971,32 @@ fetch(`/api/pokedex/${username}`)
             `Gefangene Pokémon (${caughtCount})`;
         document.querySelector("#seen-pokemon .section-title").innerText = 
             `Gesehene Pokémon (${seenCount})`;
-    })
-    .catch(error => {
+    } catch (error) {
         document.getElementById("caught-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
         document.getElementById("seen-grid").innerHTML = "<div class='empty-message'>Fehler beim Laden der Daten!</div>";
         console.error("Fehler beim Laden der Pokédex-Daten:", error);
-    });
+    }
+}
+
+        // Starte das Laden des Pokédex beim Laden der Seite
+document.addEventListener('DOMContentLoaded', function() {
+    // Theme-Selector-Elemente
+    const themeBtn = document.getElementById('theme-btn');
+    // ... (der Rest des Theme-Selector-Codes bleibt unverändert)
+
+    // Lade die Pokédex-Einträge
+    fetch('/pokedexeintrag.json')
+        .then(response => response.json())
+        .then(data => {
+            pokedexEntries = data;
+        })
+        .catch(error => {
+            console.error('Fehler beim Laden der Pokédex-Einträge:', error);
+        });
+    
+    // Starte das Laden der Pokédex-Daten
+    fetchAndDisplayPokedex();
+});
     </script>
 </body>
 </html>

@@ -787,9 +787,7 @@
             document.getElementById("shiny-count").innerText = shinyCount;
         }
 
-        // Replace the "Pokédex-Daten abrufen" section with this updated code:
-
-// Pokédex-Daten abrufen
+        // Pokédex-Daten abrufen
 fetch(`/api/pokedex/${username}`)
     .then(response => response.json())
     .then(data => {
